@@ -32,6 +32,12 @@
   z-index: 5;
     }
 
+    #countdown {
+      font-size: 1.2rem;
+      margin-top: 10px;
+      font-weight: bold;
+      color: #ff6f0f;
+    }
     h1 {
       font-size: 1.5rem;
       margin-bottom: 20px;
@@ -76,6 +82,7 @@
   <div id="loader-container">
     <h1>El-zion Global Network News</h1>
     <p>Bringing you news beyond the stars...</p>
+ <div id="countdown"></div>
   </div>
 <div id="loader-container1">
     <h2>Coming Soon</h2>
@@ -186,6 +193,35 @@
       canvas.height = window.innerHeight;
       init();
     });
+
+    // Countdown Timer
+    function startCountdown(durationInDays) {
+      const endTime = new Date().getTime() + durationInDays * 24 * 60 * 60 * 1000;
+
+      function updateCountdown() {
+        const now = new Date().getTime();
+        const distance = endTime - now;
+
+        if (distance <= 0) {
+          clearInterval(interval);
+          document.getElementById('countdown').innerText = "We're live now!";
+          return;
+        }
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        document.getElementById('countdown').innerText = 
+          `${days}d ${hours}h ${minutes}m ${seconds}s`;
+      }
+
+      updateCountdown();
+      const interval = setInterval(updateCountdown, 1000);
+    }
+
+    startCountdown(3); // Start countdown for 3 days
   </script>
 </body>
 </html>
