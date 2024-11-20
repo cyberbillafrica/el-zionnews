@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>El-zion Global Network News | Countdown</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    #loader-container {
+      text-align: center;
+      z-index: 10;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      animation: glow 2s infinite alternate;
+    }
+
+    p {
+      font-size: 1rem;
+      margin-top: -10px;
+      opacity: 0.8;
+    }
+
+    .countdown-container {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .countdown-box {
+      background: #222;
+      border: 2px solid #ff6f0f;
+      border-radius: 8px;
+      color: #fff;
+      width: 80px;
+      height: 100px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 0 15px rgba(255, 111, 15, 0.6);
+    }
+
+    .countdown-box span {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      animation: roll 0.7s ease-in-out;
+    }
+
+    .countdown-label {
+      margin-top: 5px;
+      font-size: 0.9rem;
+      color: #ff6f0f;
+    }
+
+    @keyframes roll {
+      0% {
+        transform: translateY(100%);
+      }
+      100% {
+        transform: translateY(-50%);
+      }
+    }
+
+    @keyframes glow {
+      0% {
+        text-shadow: 0 0 10px #ffffff, 0 0 20px #ff6f0f, 0 0 30px #ff6f0f;
+      }
+      100% {
+        text-shadow: 0 0 20px #ffffff, 0 0 30px #ff4500, 0 0 40px #ff4500;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="loader-container">
+    <h1>El-zion Global Network News</h1>
+    <p>Shaping the future, one story at a time...</p>
+    <div class="countdown-container">
+      <div class="countdown-box">
+        <span id="days">0</span>
+        <div class="countdown-label">Days</div>
+      </div>
+      <div class="countdown-box">
+        <span id="hours">0</span>
+        <div class="countdown-label">Hours</div>
+      </div>
+      <div class="countdown-box">
+        <span id="minutes">0</span>
+        <div class="countdown-label">Minutes</div>
+      </div>
+      <div class="countdown-box">
+        <span id="seconds">0</span>
+        <div class="countdown-label">Seconds</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Set countdown end time (persist across refresh using localStorage)
+    const durationInDays = 3; // Countdown duration in days
+    const storageKey = 'countdownEndTime';
+
+    let endTime = localStorage.getItem(storageKey);
+    if (!endTime) {
+      endTime = new Date().getTime() + durationInDays * 24 * 60 * 60 * 1000;
+      localStorage.setItem(storageKey, endTime);
+    }
+
+    // Update countdown
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const distance = endTime - now;
+
+      if (distance <= 0) {
+        document.querySelector('.countdown-container').innerHTML = "We're live now!";
+        clearInterval(interval);
+        localStorage.removeItem(storageKey); // Reset storage
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      // Update each box
+      updateBox('days', days);
+      updateBox('hours', hours);
+      updateBox('minutes', minutes);
+      updateBox('seconds', seconds);
+    }
+
+    function updateBox(id, value) {
+      const box = document.getElementById(id);
+      if (box.innerText !== value.toString()) {
+        box.style.animation = 'none'; // Reset animation
+        box.offsetHeight; // Trigger reflow
+        box.style.animation = ''; // Apply animation
+        box.innerText = value.toString().padStart(2, '0'); // Ensure two digits
+      }
+    }
+
+    // Start the countdown
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+  </script>
+</body>
+</html>
