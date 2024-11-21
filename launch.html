@@ -50,8 +50,8 @@
       border: 2px solid #ff6f0f;
       border-radius: 8px;
       color: #fff;
-      width: 60px;
-      height: 80px;
+      width: 80px;
+      height: 100px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -66,7 +66,7 @@
     .countdown-box span {
       position: absolute;
       top: 50%;
-      transform: translateY(-100%);
+      transform: translateY(-50%);
       animation: roll 0.7s ease-in-out;
     }
 
@@ -81,7 +81,7 @@
         transform: translateY(100%);
       }
       100% {
-        transform: translateY(-0%);
+        transform: translateY(-50%);
       }
     }
 
@@ -155,14 +155,18 @@
     }
 
     function updateBox(id, value) {
-      const box = document.getElementById(id);
-      if (box.innerText !== value.toString()) {
-        box.style.animation = 'none'; // Reset animation
-        box.offsetHeight; // Trigger reflow
-        box.style.animation = ''; // Apply animation
-        box.innerText = value.toString().padStart(2, '0'); // Ensure two digits
-      }
-    }
+  const box = document.getElementById(id);
+  const currentValue = box.innerText; // Get the current value
+
+  // Only update and animate if the value has changed
+  if (currentValue !== value.toString().padStart(2, '0')) {
+    box.style.animation = 'none'; // Reset animation
+    box.offsetHeight; // Trigger reflow
+    box.style.animation = ''; // Apply animation
+    box.innerText = value.toString().padStart(2, '0'); // Ensure two digits
+  }
+}
+
 
     // Start the countdown
     updateCountdown();
