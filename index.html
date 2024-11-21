@@ -158,12 +158,13 @@
       const now = new Date().getTime();
       const distance = endTime - now;
 
-      if (distance <= 0) {
-        document.querySelector('.countdown-container').innerHTML = "We're live now!";
-        clearInterval(interval);
-        localStorage.removeItem(storageKey); // Reset storage
-        return;
-      }
+    if (distance <= 0) {
+    // Redirect to the desired URL
+    window.location.href = "index.html";
+    clearInterval(interval);
+    localStorage.removeItem(storageKey); // Reset storage
+    return;
+}
 
       const days = Math.floor(distance / (1000 * 60 * 60 * 24));
       const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
