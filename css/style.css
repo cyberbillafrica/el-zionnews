@@ -147,7 +147,7 @@ a.text-dark:hover, a.text-dark:focus {
 }
 
 .text-body {
-  color: #9A9DA2 !important;
+  color: #000000 !important; 
 }
 
 .text-muted {
