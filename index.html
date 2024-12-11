@@ -1040,22 +1040,75 @@ s0.parentNode.insertBefore(s1,s0);
 <!-- Template Javascript -->
 <script src="js/main.js"></script>
 
-<div id="cookie-banner" style="position: fixed; bottom: 0; background:   #6c757d; padding: 20px; width: 100%; text-align: center; box-shadow: 0 -3px 5px rgba(0,0,0,0.1);">
-  <p>
-    We use cookies to improve your browsing experience and to personalize services for you. By continuing, you agree to our <a href="/cookie-policy" style="color: blue;">Cookie Policy</a>.
-  </p>
-  <button id="accept-cookies" style="padding: 10px 15px; background: red; color: white; border: none; cursor: pointer;"><b>Accept Cookies</b></button>
+<div id="cookie-banner" style="
+  position: fixed; 
+  bottom: 20%; /* Leaves space from the bottom but before the center */
+  left: 50%; 
+  transform: translateX(-50%); 
+  background: #4a6572; /* Bluish-grey background */
+  color: white; 
+  padding: 20px; 
+  width: 80%; 
+  max-width: 600px; 
+  border: 3px solid #ff4500; /* Edge border with orange-red color */
+  border-radius: 10px; 
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  text-align: center; 
+  z-index: 9999;">
+  <p style="margin-bottom: 20px;">
+        We use cookies to improve your browsing experience and to personalize services for you. By continuing, you agree to our <a href="/cookie-policy" style="color: blue;">Cookie Policy</a>.
+ </p>
+  <button id="accept-cookies" style="
+    padding: 10px 20px; 
+    background: red; 
+    color: white; 
+    border: none; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    margin-right: 10px;"><b>Accept Cookies</b></button>
+  <button id="reject-cookies" style="
+    padding: 10px 20px; 
+    background: red; 
+    color: white; 
+    border: none; 
+    border-radius: 5px; 
+    cursor: pointer;">Reject Cookies</button>
 </div>
-<script>
-  document.getElementById("accept-cookies").addEventListener("click", function () {
-    document.cookie = "cookies_accepted=true; path=/; max-age=31536000"; // 1 year
-    document.getElementById("cookie-banner").style.display = "none";
-  });
 
-  if (document.cookie.includes("cookies_accepted=true")) {
-    document.getElementById("cookie-banner").style.display = "none";
+	
+// Function to set a cookie
+function setCookie(name, value, days) {
+  const expires = new Date();
+  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+  document.cookie = `${name}=${value}; path=/; expires=${expires.toUTCString()}`;
+}
+
+// Function to get a cookie by name
+function getCookie(name) {
+  const cookies = document.cookie.split("; ");
+  for (let cookie of cookies) {
+    const [key, value] = cookie.split("=");
+    if (key === name) return value;
   }
-</script>
+  return null;
+}
+
+// Event listeners for the buttons
+document.getElementById("accept-cookies").addEventListener("click", function () {
+  setCookie("cookies_accepted", "true", 365); // 1 year
+  document.getElementById("cookie-banner").style.display = "none";
+});
+
+document.getElementById("reject-cookies").addEventListener("click", function () {
+  setCookie("cookies_rejected", "true", 365); // 1 year
+  document.getElementById("cookie-banner").style.display = "none";
+});
+
+// Check if cookies were already accepted or rejected
+if (getCookie("cookies_accepted") || getCookie("cookies_rejected")) {
+  document.getElementById("cookie-banner").style.display = "none";
+}
+
 </body>
 
   </html>
