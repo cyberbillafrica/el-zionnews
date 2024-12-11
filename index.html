@@ -1048,7 +1048,7 @@ s0.parentNode.insertBefore(s1,s0);
   background: #4a6572; /* Bluish-grey background */
   color: white; 
   padding: 20px; 
-  width: 80%; 
+  width: 95%; 
   max-width: 600px; 
   border: 3px solid #ff4500; /* Edge border with orange-red color */
   border-radius: 10px; 
@@ -1066,7 +1066,8 @@ s0.parentNode.insertBefore(s1,s0);
     border-radius: 5px; 
     cursor: pointer; 
     margin-right: 10px;"><b>Accept Cookies</b></button>
-  <button id="reject-cookies" style="
+  <hr>
+<button id="reject-cookies" style="
     padding: 10px 20px; 
     background: red; 
     color: white; 
@@ -1077,7 +1078,8 @@ s0.parentNode.insertBefore(s1,s0);
 
 	
 // Function to set a cookie
-function setCookie(name, value, days) {
+<script>
+  function setCookie(name, value, days) {
   const expires = new Date();
   expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
   document.cookie = `${name}=${value}; path=/; expires=${expires.toUTCString()}`;
@@ -1108,7 +1110,7 @@ document.getElementById("reject-cookies").addEventListener("click", function () 
 if (getCookie("cookies_accepted") || getCookie("cookies_rejected")) {
   document.getElementById("cookie-banner").style.display = "none";
 }
-
+</script>
 </body>
 
   </html>
