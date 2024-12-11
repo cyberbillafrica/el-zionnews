@@ -149,7 +149,30 @@
         // Call the function to set the date when the page loads
         updateDate();
     </script>
-    
+    <div class="container-fluid p-0">
+    <nav class="navbar navbar-expand-lg bg-dark navbar-dark py-2 py-lg-0 px-lg-5">
+        <a href="index.html" class="navbar-brand d-block d-lg-none">
+            <h1 class="m-0 display-4 text-uppercase text-left" style="color: red;">El-zion<span class="text-right font-weight-normal" style="color: #F5F5DC;">News</span></h1>
+        </a>
+        <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-between px-0 px-lg-3" id="navbarCollapse">
+            <div class="navbar-nav mr-auto py-0">
+                <a href="#" class="nav-item nav-link">Menu</a>
+            </div>
+            <div class="input-group ml-auto d-flex align-items-center" style="width: 70%; max-width: 150px;">
+                <input id="searchInput" type="text" class="form-control border-0" placeholder="Keyword" style="height: 40px;">
+                <div class="input-group-append">
+                  <button id="searchButton" class="input-group-text bg-primary text-dark border-0 px-3" style="height: 40px; padding: 0 15px;">
+                    <i class="fa fa-search"></i>
+                  </button>
+                </div>
+              </div>              
+        </div>
+    </nav>
+    </div>
+	
     <div class="container">
         <h1>Privacy Policy</h1>
         <p><strong>Effective Date:</strong> [Insert Date]</p>
@@ -322,5 +345,6 @@
 
 <!-- Template Javascript -->
 <script src="js/main.js"></script>
+
 </body>
 </html>
