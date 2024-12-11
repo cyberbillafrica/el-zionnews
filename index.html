@@ -1042,20 +1042,20 @@ s0.parentNode.insertBefore(s1,s0);
 
 <div id="cookie-banner" style="
   position: fixed; 
-  bottom: 20%; /* Leaves space from the bottom but before the center */
+  bottom: 10%; /* Leaves space from the bottom but before the center */
   left: 50%; 
   transform: translateX(-50%); 
   background: #4a6572; /* Bluish-grey background */
   color: white; 
   padding: 20px; 
-  width: 95%; 
+  width: 98%; 
   max-width: 600px; 
-  border: 3px solid #ff4500; /* Edge border with orange-red color */
+  border: 3px solid goldenrod; /* Edge border with orange-red color */
   border-radius: 10px; 
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   text-align: center; 
   z-index: 9999;">
-  <p style="margin-bottom: 20px;">
+  <p style="margin-bottom: 20px; color: white;">
         We use cookies to improve your browsing experience and to personalize services for you. By continuing, you agree to our <a href="/cookie-policy" style="color: blue;">Cookie Policy</a>.
  </p>
   <button id="accept-cookies" style="
@@ -1063,7 +1063,7 @@ s0.parentNode.insertBefore(s1,s0);
     background: red; 
     color: white; 
     border: none; 
-    border-radius: 5px; 
+    border-radius: 10px; 
     cursor: pointer; 
     margin-right: 10px;"><b>Accept Cookies</b></button>
   <hr>
@@ -1077,9 +1077,10 @@ s0.parentNode.insertBefore(s1,s0);
 </div>
 
 	
-// Function to set a cookie
+
 <script>
-  function setCookie(name, value, days) {
+ // Function to set a cookie
+function setCookie(name, value, days) {
   const expires = new Date();
   expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
   document.cookie = `${name}=${value}; path=/; expires=${expires.toUTCString()}`;
