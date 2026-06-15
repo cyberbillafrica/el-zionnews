@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Editor Console - El Zion News</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; }
+    .navbar { box-shadow: 0 2px 4px rgba(0,0,0,.1); }
+    .sidebar { position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+    .article-card { transition: transform 0.2s, box-shadow 0.2s; }
+    .article-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+    .status-badge { font-size: 0.85rem; }
+    .editor-form { max-width: 900px; }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">El Zion Editor Console</a>
+      <div class="d-flex align-items-center gap-3">
+        <span id="userEmail" class="text-muted small"></span>
+        <button id="logoutBtn" class="btn btn-outline-secondary btn-sm">Sign out</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <div class="col-md-2 sidebar bg-light border-end p-3">
+        <div class="list-group">
+          <a href="#home" class="list-group-item list-group-item-action active" data-section="home">
+            <i class="bi bi-house"></i> Dashboard
+          </a>
+          <a href="#create" class="list-group-item list-group-item-action" data-section="create">
+            <i class="bi bi-pencil-square"></i> New Article
+          </a>
+          <a href="#drafts" class="list-group-item list-group-item-action" data-section="drafts">
+            <i class="bi bi-file-text"></i> My Drafts
+          </a>
+          <a href="#published" class="list-group-item list-group-item-action" data-section="published">
+            <i class="bi bi-check-circle"></i> Published
+          </a>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="col-md-10 p-4">
+        <!-- Dashboard View -->
+        <section id="home" class="section active">
+          <h3 class="mb-4">Welcome to Editor Console</h3>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="card mb-3">
+                <div class="card-body">
+                  <h5 class="card-title">Quick Stats</h5>
+                  <p class="card-text">
+                    <strong>Drafts:</strong> <span id="draftCount">0</span>
+                  </p>
+                  <p class="card-text">
+                    <strong>Published:</strong> <span id="publishedCount">0</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card mb-3">
+                <div class="card-body">
+                  <h5 class="card-title">Quick Actions</h5>
+                  <div class="d-grid gap-2">
+                    <button class="btn btn-primary btn-sm" onclick="switchSection('create')">Create New Article</button>
+                    <button class="btn btn-outline-primary btn-sm" onclick="switchSection('drafts')">View Drafts</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Create/Edit Article -->
+        <section id="create" class="section">
+          <h3 class="mb-4">Create New Article</h3>
+          <form id="articleForm" class="editor-form">
+            <div class="mb-3">
+              <label for="title" class="form-label">Title</label>
+              <input type="text" class="form-control" id="title" placeholder="Article title" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="excerpt" class="form-label">Excerpt</label>
+              <textarea class="form-control" id="excerpt" rows="2" placeholder="Brief summary"></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="body" class="form-label">Content</label>
+              <textarea class="form-control" id="body" rows="8" placeholder="Article body" required></textarea>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <label for="category" class="form-label">Category</label>
+                <select class="form-select" id="category"></select>
+              </div>
+              <div class="col-md-6">
+                <label for="tags" class="form-label">Tags</label>
+                <select class="form-select" id="tags" multiple></select>
+              </div>
+            </div>
+
+            <div class="row mt-3">
+              <div class="col-md-6">
+                <label for="metaTitle" class="form-label">Meta Title (SEO)</label>
+                <input type="text" class="form-control" id="metaTitle" placeholder="SEO title">
+              </div>
+              <div class="col-md-6">
+                <label for="metaKeywords" class="form-label">Meta Keywords</label>
+                <input type="text" class="form-control" id="metaKeywords" placeholder="comma separated keywords">
+              </div>
+            </div>
+
+            <div class="mb-3 mt-3">
+              <label for="metaDescription" class="form-label">Meta Description (SEO)</label>
+              <textarea class="form-control" id="metaDescription" rows="2" placeholder="SEO description (160 chars max)"></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="metaImage" class="form-label">Meta Image (Social Share)</label>
+              <input type="url" class="form-control" id="metaImage" placeholder="Image URL for social sharing">
+            </div>
+
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" id="breaking">
+              <label class="form-check-label" for="breaking">Mark as Breaking News</label>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-secondary" onclick="saveDraft()">Save Draft</button>
+              <button type="button" class="btn btn-success" onclick="publishArticle()">Publish Article</button>
+              <button type="button" class="btn btn-outline-secondary" onclick="switchSection('home')">Cancel</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- My Drafts -->
+        <section id="drafts" class="section">
+          <h3 class="mb-4">My Drafts</h3>
+          <div id="draftsList" class="row"></div>
+        </section>
+
+        <!-- Published Articles -->
+        <section id="published" class="section">
+          <h3 class="mb-4">My Published Articles</h3>
+          <div id="publishedList" class="row"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { supabase, getSession } from './supabase.js';
+
+    let currentUser = null;
+    let categories = [];
+    let tags = [];
+    let editingArticleId = null;
+
+    async function ensureAuth() {
+      try {
+        const { data } = await getSession();
+        const session = data?.session;
+        if (!session) {
+          window.location.href = 'index.html';
+          return;
+        }
+
+        currentUser = session.user;
+        document.getElementById('userEmail').textContent = session.user.email;
+
+        // Check if user is editor or admin
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', currentUser.id)
+          .single();
+
+        if (!profile || (profile.role !== 'editor' && profile.role !== 'admin')) {
+          alert('You do not have editor access.');
+          window.location.href = 'index.html';
+          return;
+        }
+
+        await loadCategories();
+        await loadTags();
+        await loadStats();
+      } catch (err) {
+        console.error('Auth error:', err);
+        window.location.href = 'index.html';
+      }
+    }
+
+    async function loadCategories() {
+      const { data } = await supabase.from('categories').select('id, name');
+      categories = data || [];
+      const select = document.getElementById('category');
+      select.innerHTML = '<option value="">Select Category</option>';
+      categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.id;
+        option.textContent = cat.name;
+        select.appendChild(option);
+      });
+    }
+
+    async function loadTags() {
+      const { data } = await supabase.from('tags').select('id, name');
+      tags = data || [];
+      const select = document.getElementById('tags');
+      select.innerHTML = '';
+      tags.forEach(tag => {
+        const option = document.createElement('option');
+        option.value = tag.id;
+        option.textContent = tag.name;
+        select.appendChild(option);
+      });
+    }
+
+    async function loadStats() {
+      const { count: drafts } = await supabase
+        .from('articles')
+        .select('id', { count: 'exact' })
+        .eq('author_id', currentUser.id)
+        .eq('status', 'draft');
+
+      const { count: published } = await supabase
+        .from('articles')
+        .select('id', { count: 'exact' })
+        .eq('author_id', currentUser.id)
+        .eq('status', 'published');
+
+      document.getElementById('draftCount').textContent = drafts || 0;
+      document.getElementById('publishedCount').textContent = published || 0;
+    }
+
+    window.switchSection = function(section) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(section).classList.add('active');
+
+      document.querySelectorAll('[data-section]').forEach(link => {
+        link.classList.remove('active');
+        if (link.dataset.section === section) link.classList.add('active');
+      });
+
+      if (section === 'drafts') loadDrafts();
+      if (section === 'published') loadPublished();
+    };
+
+    window.saveDraft = async function() {
+      const article = getFormData();
+      article.status = 'draft';
+
+      try {
+        let result;
+        if (editingArticleId) {
+          const { error } = await supabase
+            .from('articles')
+            .update(article)
+            .eq('id', editingArticleId);
+          if (error) throw error;
+          result = { data: { id: editingArticleId } };
+        } else {
+          result = await supabase.from('articles').insert([article]).select();
+          if (result.error) throw result.error;
+        }
+
+        alert('Draft saved successfully!');
+        resetForm();
+        await loadStats();
+        switchSection('home');
+      } catch (err) {
+        alert('Error saving draft: ' + err.message);
+      }
+    };
+
+    window.publishArticle = async function() {
+      const article = getFormData();
+      article.status = 'published';
+      article.published_at = new Date().toISOString();
+
+      try {
+        let result;
+        if (editingArticleId) {
+          const { error } = await supabase
+            .from('articles')
+            .update(article)
+            .eq('id', editingArticleId);
+          if (error) throw error;
+        } else {
+          result = await supabase.from('articles').insert([article]).select();
+          if (result.error) throw result.error;
+        }
+
+        alert('Article published! Admin will be notified.');
+        resetForm();
+        await loadStats();
+        switchSection('home');
+      } catch (err) {
+        alert('Error publishing: ' + err.message);
+      }
+    };
+
+    function getFormData() {
+      return {
+        title: document.getElementById('title').value,
+        slug: generateSlug(document.getElementById('title').value),
+        excerpt: document.getElementById('excerpt').value,
+        body: document.getElementById('body').value,
+        category_id: parseInt(document.getElementById('category').value) || null,
+        meta_title: document.getElementById('metaTitle').value,
+        meta_description: document.getElementById('metaDescription').value,
+        meta_keywords: document.getElementById('metaKeywords').value,
+        meta_image: document.getElementById('metaImage').value,
+        breaking: document.getElementById('breaking').checked,
+        author_id: currentUser.id
+      };
+    }
+
+    function generateSlug(title) {
+      return title
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+    }
+
+    function resetForm() {
+      document.getElementById('articleForm').reset();
+      editingArticleId = null;
+    }
+
+    async function loadDrafts() {
+      const { data } = await supabase
+        .from('articles')
+        .select('id, title, created_at, updated_at')
+        .eq('author_id', currentUser.id)
+        .eq('status', 'draft')
+        .order('updated_at', { ascending: false });
+
+      renderArticles(data, 'draftsList', 'draft');
+    }
+
+    async function loadPublished() {
+      const { data } = await supabase
+        .from('articles')
+        .select('id, title, published_at, view_count')
+        .eq('author_id', currentUser.id)
+        .eq('status', 'published')
+        .order('published_at', { ascending: false });
+
+      renderArticles(data, 'publishedList', 'published');
+    }
+
+    function renderArticles(articles, containerId, type) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+
+      if (!articles || articles.length === 0) {
+        container.innerHTML = '<p class="text-muted">No articles yet.</p>';
+        return;
+      }
+
+      articles.forEach(article => {
+        const date = type === 'draft' ? article.updated_at : article.published_at;
+        const card = document.createElement('div');
+        card.className = 'col-md-6 mb-3';
+        card.innerHTML = `
+          <div class="card article-card h-100">
+            <div class="card-body">
+              <h5 class="card-title">${article.title}</h5>
+              <p class="card-text text-muted small">
+                ${type === 'draft' ? 'Updated' : 'Published'}: ${new Date(date).toLocaleDateString()}
+              </p>
+              ${type === 'published' ? `<p class="card-text text-muted small">Views: ${article.view_count}</p>` : ''}
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-primary" onclick="editArticle('${article.id}')">Edit</button>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteArticle('${article.id}')">Delete</button>
+              </div>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    window.editArticle = async function(articleId) {
+      const { data } = await supabase
+        .from('articles')
+        .select('*')
+        .eq('id', articleId)
+        .single();
+
+      if (data) {
+        editingArticleId = articleId;
+        document.getElementById('title').value = data.title;
+        document.getElementById('excerpt').value = data.excerpt || '';
+        document.getElementById('body').value = data.body || '';
+        document.getElementById('category').value = data.category_id || '';
+        document.getElementById('metaTitle').value = data.meta_title || '';
+        document.getElementById('metaDescription').value = data.meta_description || '';
+        document.getElementById('metaKeywords').value = data.meta_keywords || '';
+        document.getElementById('metaImage').value = data.meta_image || '';
+        document.getElementById('breaking').checked = data.breaking || false;
+
+        switchSection('create');
+      }
+    };
+
+    window.deleteArticle = async function(articleId) {
+      if (confirm('Are you sure? This action cannot be undone.')) {
+        const { error } = await supabase
+          .from('articles')
+          .delete()
+          .eq('id', articleId);
+
+        if (error) {
+          alert('Error deleting article: ' + error.message);
+        } else {
+          alert('Article deleted.');
+          loadDrafts();
+          loadPublished();
+        }
+      }
+    };
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.href = 'index.html';
+    });
+
+    ensureAuth();
+  </script>
+</body>
+</html>
