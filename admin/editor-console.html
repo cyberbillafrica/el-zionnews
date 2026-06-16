@@ -1,3 +1,4 @@
+html
 <!doctype html>
 <html lang="en">
 <head>
@@ -30,7 +31,7 @@
     <div class="container d-flex justify-content-between align-items-center">
       <div class="d-flex align-items-center gap-2">
         <span class="gold-dot"></span>
-        <h5 class="mb-0 fw-bold tracking-tight text-dark">Reporter Desk</h5>
+        <h5 class="mb-0 fw-bold text-dark">Reporter Desk</h5>
       </div>
       <div class="d-flex align-items-center gap-3">
         <span class="small text-muted d-none d-md-inline" id="userEmail">Validating Desk Identity...</span>
@@ -49,11 +50,10 @@
   <div class="container my-4 text-center">
     <div class="d-inline-flex bg-white p-1 rounded-3 shadow-sm border">
       <button class="nav-pill-custom active" data-tab="create"><i class="bi bi-pencil-square"></i> Compose Stories</button>
-      <button class="nav-pill-custom" data-tab="vault"><i class="bi bi-archive-fill"></i> My Drafts Storage (<span id="draftCount">0</span>)</button>
+      <button class="nav-pill-custom" data-tab="vault"><i class="bi bi-archive-fill"></i> My Local Drafts (<span id="draftCount">0</span>)</button>
     </div>
   </div>
 
-  <!-- Primary Workspace Content Section -->
   <main class="container mb-5">
     
     <!-- PANE 1: WRITING ENVIRONMENT INTERFACE -->
@@ -88,8 +88,8 @@
             <input class="form-check-input me-2" type="checkbox" id="breaking">
           </div>
           <div class="d-flex gap-2 justify-content-end">
-            <button type="button" class="btn btn-secondary px-4 fw-semibold" onclick="saveDraft()">Save to Drafts</button>
-            <button type="button" class="btn btn-danger px-4 fw-semibold" style="background-color: var(--ez-red);" onclick="publishArticle()">Send to Review Desk</button>
+            <button type="button" class="btn btn-secondary px-4 fw-semibold" onclick="saveDraft()">Save as Draft</button>
+            <button type="button" class="btn btn-danger px-4 fw-semibold" style="background-color: var(--ez-red);" onclick="publishArticle()">Instant Live Publish</button>
           </div>
         </form>
       </div>
@@ -124,7 +124,7 @@
         document.getElementById('userEmail').textContent = currentUser.email;
 
         if (!(await isEditor())) {
-          alert('System Context Error: Reporter/Editor security level mapping verified invalid.');
+          alert('System Context Error: Security level validation mapping verified invalid.');
           window.location.href = 'index.html';
           return;
         }
@@ -176,19 +176,20 @@
       if (editingArticleId) await updateArticle(editingArticleId, payload);
       else await createArticle(payload);
 
-      alert('Draft saved.');
+      alert('Draft saved successfully.');
       resetInterface();
     };
 
     window.publishArticle = async function() {
       if (!document.getElementById('title').value || !document.getElementById('body').value) { alert('Title and Content required.'); return; }
       const payload = await packageFormData();
-      payload.status = 'pending_review';
+      payload.status = 'published'; // Send direct to public feed instantly
+      payload.published_at = new Date().toISOString();
 
       if (editingArticleId) await updateArticle(editingArticleId, payload);
       else await createArticle(payload);
 
-      alert('Story submitted to main queue.');
+      alert('Story has been published live!');
       resetInterface();
     };
 
