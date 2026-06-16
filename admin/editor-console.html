@@ -6,265 +6,272 @@
   <title>Editor Console - El Zion News</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { background-color: #f8f9fa; }
-    .navbar { box-shadow: 0 2px 4px rgba(0,0,0,.1); }
-    .sidebar { position: sticky; top: 0; height: 100vh; overflow-y: auto; }
-    .article-card { transition: transform 0.2s, box-shadow 0.2s; }
-    .article-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.15); }
-    .status-badge { font-size: 0.85rem; }
-    .editor-form { max-width: 900px; }
+    body { background-color: #f4f6f9; }
+    .editor-sidebar { min-height: 100vh; background: #212529; color: #fff; p-3; }
+    .editor-sidebar .nav-link { color: #ccc; }
+    .editor-sidebar .nav-link.active { background: #0d6efd; color: #fff; }
+    .section { display: none; }
+    .section.active { display: block; }
   </style>
 </head>
 <body>
-  <!-- Navigation -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">El Zion Editor Console</a>
-      <div class="d-flex align-items-center gap-3">
-        <span id="userEmail" class="text-muted small"></span>
-        <button id="logoutBtn" class="btn btn-outline-secondary btn-sm">Sign out</button>
-      </div>
-    </div>
-  </nav>
 
   <div class="container-fluid">
     <div class="row">
-      <!-- Sidebar -->
-      <div class="col-md-2 sidebar bg-light border-end p-3">
-        <div class="list-group">
-          <a href="#home" class="list-group-item list-group-item-action active" data-section="home">
-            <i class="bi bi-house"></i> Dashboard
-          </a>
-          <a href="#create" class="list-group-item list-group-item-action" data-section="create">
-            <i class="bi bi-pencil-square"></i> New Article
-          </a>
-          <a href="#drafts" class="list-group-item list-group-item-action" data-section="drafts">
-            <i class="bi bi-file-text"></i> My Drafts
-          </a>
-          <a href="#published" class="list-group-item list-group-item-action" data-section="published">
-            <i class="bi bi-check-circle"></i> Published
-          </a>
+      <nav class="col-md-3 col-lg-2 editor-sidebar p-3 d-flex flex-column justify-content-between">
+        <div>
+          <h5 class="fw-bold text-white border-bottom pb-2">Reporter Desk</h5>
+          <p class="small text-muted mb-3" id="userEmail">Checking access...</p>
+          <ul class="nav flex-column">
+            <li class="nav-item mb-1">
+              <a class="nav-link active" href="#" data-section="home" onclick="switchSection('home')">✍️ Compose News</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" data-section="drafts" onclick="switchSection('drafts')">📂 My Drafts (<span id="draftCount">0</span>)</a>
+            </li>
+          </ul>
         </div>
-      </div>
+        <button id="logoutBtn" class="btn btn-sm btn-outline-danger w-100 mt-4">Sign Out</button>
+      </nav>
 
-      <!-- Main Content -->
-      <div class="col-md-10 p-4">
-        <!-- Dashboard View -->
-        <section id="home" class="section active">
-          <h3 class="mb-4">Welcome to Editor Console</h3>
-          <div class="row">
-            <div class="col-md-6">
-              <div class="card mb-3">
-                <div class="card-body">
-                  <h5 class="card-title">Quick Stats</h5>
-                  <p class="card-text">
-                    <strong>Drafts:</strong> <span id="draftCount">0</span>
-                  </p>
-                  <p class="card-text">
-                    <strong>Published:</strong> <span id="publishedCount">0</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="card mb-3">
-                <div class="card-body">
-                  <h5 class="card-title">Quick Actions</h5>
-                  <div class="d-grid gap-2">
-                    <button class="btn btn-primary btn-sm" onclick="switchSection('create')">Create New Article</button>
-                    <button class="btn btn-outline-primary btn-sm" onclick="switchSection('drafts')">View Drafts</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Create/Edit Article -->
-        <section id="create" class="section">
-          <h3 class="mb-4">Create New Article</h3>
-          <form id="articleForm" class="editor-form">
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+        
+        <div id="home" class="section active">
+          <h2 class="mb-4">Create New Article Asset</h2>
+          <form id="articleForm" class="card p-4">
             <div class="mb-3">
-              <label for="title" class="form-label">Title</label>
-              <input type="text" class="form-control" id="title" placeholder="Article title" required>
+              <label class="form-label fw-bold">Article Title / Headline</label>
+              <input type="text" id="title" class="form-control" required placeholder="Enter breaking news title...">
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Classification Category</label>
+                <select id="categorySelect" class="form-select" required>
+                  <option value="">-- Fetching Available Categories --</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Featured Image (Supabase Storage Upload)</label>
+                <input type="file" id="imageFile" class="form-control" accept="image/*">
+                <div class="form-text">Direct high-speed asset upload to Supabase cloud bucket storage.</div>
+              </div>
             </div>
 
             <div class="mb-3">
-              <label for="excerpt" class="form-label">Excerpt</label>
-              <textarea class="form-control" id="excerpt" rows="2" placeholder="Brief summary"></textarea>
+              <label class="form-label fw-bold">Short Excerpt / Preview Summary</label>
+              <input type="text" id="excerpt" class="form-control" placeholder="Brief subtitle for index lists...">
             </div>
 
             <div class="mb-3">
-              <label for="body" class="form-label">Content</label>
-              <textarea class="form-control" id="body" rows="8" placeholder="Article body" required></textarea>
+              <label class="form-label fw-bold">Content Narrative Body</label>
+              <textarea id="body" class="form-control" rows="12" required placeholder="Write clear text content paragraphs here..."></textarea>
             </div>
 
-            <div class="row">
-              <div class="col-md-6">
-                <label for="category" class="form-label">Category</label>
-                <select class="form-select" id="category"></select>
-              </div>
-              <div class="col-md-6">
-                <label for="tags" class="form-label">Tags</label>
-                <select class="form-select" id="tags" multiple></select>
-              </div>
-            </div>
-
-            <div class="row mt-3">
-              <div class="col-md-6">
-                <label for="metaTitle" class="form-label">Meta Title (SEO)</label>
-                <input type="text" class="form-control" id="metaTitle" placeholder="SEO title">
-              </div>
-              <div class="col-md-6">
-                <label for="metaKeywords" class="form-label">Meta Keywords</label>
-                <input type="text" class="form-control" id="metaKeywords" placeholder="comma separated keywords">
-              </div>
-            </div>
-
-            <div class="mb-3 mt-3">
-              <label for="metaDescription" class="form-label">Meta Description (SEO)</label>
-              <textarea class="form-control" id="metaDescription" rows="2" placeholder="SEO description (160 chars max)"></textarea>
-            </div>
-
-            <div class="mb-3">
-              <label for="metaImage" class="form-label">Meta Image (Social Share)</label>
-              <input type="url" class="form-control" id="metaImage" placeholder="Image URL for social sharing">
-            </div>
-
-            <div class="form-check mb-3">
+            <div class="form-check form-switch mb-4">
               <input class="form-check-input" type="checkbox" id="breaking">
-              <label class="form-check-label" for="breaking">Mark as Breaking News</label>
+              <label class="form-check-label fw-bold text-danger" for="breaking">Mark as Critical Breaking News Banner Alert</label>
             </div>
 
             <div class="d-flex gap-2">
-              <button type="button" class="btn btn-secondary" onclick="saveDraft()">Save Draft</button>
-              <button type="button" class="btn btn-success" onclick="publishArticle()">Publish Article</button>
-              <button type="button" class="btn btn-outline-secondary" onclick="switchSection('home')">Cancel</button>
+              <button type="button" class="btn btn-secondary px-4" onclick="saveDraft()">Save to Internal Drafts</button>
+              <button type="button" class="btn btn-success px-4" onclick="publishArticle()">Submit to Admin Queue</button>
             </div>
           </form>
-        </section>
+        </div>
 
-        <!-- My Drafts -->
-        <section id="drafts" class="section">
-          <h3 class="mb-4">My Drafts</h3>
+        <div id="drafts" class="section">
+          <h2 class="mb-4">Saved Content Staging Vault</h2>
           <div id="draftsList" class="row"></div>
-        </section>
+        </div>
 
-        <!-- Published Articles -->
-        <section id="published" class="section">
-          <h3 class="mb-4">My Published Articles</h3>
-          <div id="publishedList" class="row"></div>
-        </section>
-      </div>
+      </main>
     </div>
   </div>
 
   <script type="module">
-  import { getSession, signOut } from './services/supabase.js';
-  import { isEditor } from './services/roles.js';
-  import { createArticle, updateArticle, getArticles } from './services/articles.js';
+    import { getSession, signOut } from './services/auth.js';
+    import { isEditor } from './services/roles.js';
+    import { createArticle, updateArticle, getArticles } from './services/articles.js';
+    import { uploadMediaAsset } from './services/media.js';
+    import { supabase } from './services/supabase.js';
 
-  let currentUser = null;
-  let editingArticleId = null;
+    let currentUser = null;
+    let editingArticleId = null;
 
-  async function ensureAuth() {
-    try {
-      const { data } = await getSession(); // [cite: 103]
-      const session = data?.session; // [cite: 104]
-      if (!session) { window.location.href = 'index.html'; return; } // [cite: 104]
+    async function ensureAuth() {
+      try {
+        const { data } = await getSession();
+        const session = data?.session;
+        if (!session) { window.location.href = 'index.html'; return; }
 
-      currentUser = session.user; // [cite: 105]
-      document.getElementById('userEmail').textContent = session.user.email; // [cite: 105]
+        currentUser = session.user;
+        document.getElementById('userEmail').textContent = session.user.email;
 
-      const allowed = await isEditor();
-      if (!allowed) {
-        alert('Unauthorized context access.');
+        const allowed = await isEditor();
+        if (!allowed) {
+          alert('Access violation: Access context unauthorized.');
+          window.location.href = 'index.html';
+          return;
+        }
+
+        await populateCategoriesDropdown();
+        await loadStats();
+      } catch (err) {
         window.location.href = 'index.html';
+      }
+    }
+
+    async function populateCategoriesDropdown() {
+      const dropdown = document.getElementById('categorySelect');
+      dropdown.innerHTML = '<option value="">-- Select News Channel Category --</option>';
+      
+      const { data, error } = await supabase.from('categories').select('id, name');
+      if (!error && data) {
+        data.forEach(cat => {
+          dropdown.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
+        });
+      }
+    }
+
+    async function loadStats() {
+      const list = await getArticles();
+      const drafts = list.filter(a => a.status === 'draft');
+      document.getElementById('draftCount').textContent = drafts.length;
+    }
+
+    async function getFormData() {
+      let imageUrl = null;
+      const fileInput = document.getElementById('imageFile');
+      
+      // Automatic image pipeline upload verification
+      if (fileInput.files.length > 0) {
+        try {
+          const file = fileInput.files[0];
+          const mediaRecord = await uploadMediaAsset(file, currentUser.id);
+          imageUrl = mediaRecord.file_url;
+        } catch (uploadErr) {
+          console.error("Image pipeline aborting:", uploadErr);
+          alert("Warning: Asset upload failed. Saving with fallback layout.");
+        }
+      }
+
+      const rawTitle = document.getElementById('title').value;
+      const computedSlug = rawTitle.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+
+      const data = {
+        title: rawTitle,
+        slug: computedSlug + '-' + Math.floor(1000 + Math.random() * 9000), // Append collision salt
+        excerpt: document.getElementById('excerpt').value,
+        content: document.getElementById('body').value,
+        breaking_news: document.getElementById('breaking').checked,
+        author_id: currentUser.id,
+        category_id: document.getElementById('categorySelect').value || null
+      };
+
+      if (imageUrl) data.featured_image = imageUrl;
+      return data;
+    }
+
+    window.saveDraft = async function() {
+      if (!document.getElementById('title').value) { alert("A Title is mandatory to store a draft."); return; }
+      const payload = await getFormData();
+      payload.status = 'draft';
+
+      try {
+        if (editingArticleId) {
+          await updateArticle(editingArticleId, payload);
+        } else {
+          await createArticle(payload);
+        }
+        alert('Staging state saved inside table cluster.');
+        document.getElementById('articleForm').reset();
+        editingArticleId = null;
+        await loadStats();
+        switchSection('home');
+      } catch (err) {
+        alert('Data layer error committing draft: ' + err.message);
+      }
+    };
+
+    window.publishArticle = async function() {
+      if (!document.getElementById('title').value || !document.getElementById('body').value) {
+        alert("Headline and narrative content layers are missing context inputs.");
         return;
       }
+      const payload = await getFormData();
+      payload.status = 'pending_review'; // Enforces authorization pipeline check workflow
 
-      await loadStats();
-    } catch (err) {
-      window.location.href = 'index.html'; // [cite: 109]
-    }
-  }
-
-  async function loadStats() {
-    // Collect specific scopes for reporters
-    const list = await getArticles();
-    const drafts = list.filter(a => a.status === 'draft');
-    const published = list.filter(a => a.status === 'published');
-
-    document.getElementById('draftCount').textContent = drafts.length;
-    document.getElementById('publishedCount').textContent = published.length;
-  }
-
-  function getFormData() {
-    return {
-      title: document.getElementById('title').value,
-      slug: document.getElementById('title').value.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-'), // [cite: 135, 137]
-      excerpt: document.getElementById('excerpt').value, // [cite: 135]
-      content: document.getElementById('body').value, // Corrected map to schema 'content'
-      breaking_news: document.getElementById('breaking').checked, // Corrected map to schema
-      author_id: currentUser.id // [cite: 136]
+      try {
+        if (editingArticleId) {
+          await updateArticle(editingArticleId, payload);
+        } else {
+          await createArticle(payload);
+        }
+        alert('Dispatched to Administration review validation pipeline processing pools.');
+        document.getElementById('articleForm').reset();
+        editingArticleId = null;
+        await loadStats();
+        switchSection('home');
+      } catch (err) {
+        alert('Publish request validation exception: ' + err.message);
+      }
     };
-  }
 
-  window.saveDraft = async function() {
-    const payload = getFormData();
-    payload.status = 'draft'; // [cite: 122]
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await signOut();
+      window.location.href = 'index.html';
+    });
 
-    try {
-      if (editingArticleId) {
-        await updateArticle(editingArticleId, payload);
-      } else {
-        await createArticle(payload);
+    window.switchSection = function(section) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(section).classList.add('active');
+      
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.dataset.section === section) link.classList.add('active');
+      });
+
+      if (section === 'drafts') {
+        getArticles('draft').then(res => renderDrafts(res));
       }
-      alert('Draft sync persistent.');
-      document.getElementById('articleForm').reset(); // [cite: 138]
-      editingArticleId = null; // [cite: 138]
-      await loadStats(); // [cite: 127]
-      switchSection('home'); // [cite: 127]
-    } catch (err) {
-      alert('Draft submission failed: ' + err.message);
-    }
-  };
+    };
 
-  window.publishArticle = async function() {
-    const payload = getFormData();
-    // Enforcing Editorial Review validation workflow instead of direct bypass injection 
-    payload.status = 'pending_review'; 
-
-    try {
-      if (editingArticleId) {
-        await updateArticle(editingArticleId, payload);
-      } else {
-        await createArticle(payload);
+    function renderDrafts(articles) {
+      const container = document.getElementById('draftsList');
+      container.innerHTML = '';
+      if (articles.length === 0) {
+        container.innerHTML = '<p class="text-muted p-3">Your staging vault folder is currently empty.</p>';
+        return;
       }
-      alert('Dispatched to Administration Queue for peer-review pipeline processing.');
-      document.getElementById('articleForm').reset();
-      editingArticleId = null;
-      await loadStats(); // [cite: 134]
-      switchSection('home'); // [cite: 134]
-    } catch (err) {
-      alert('Publish staging fault: ' + err.message);
+      articles.forEach(art => {
+        const div = document.createElement('div');
+        div.className = 'col-md-6 mb-3';
+        div.innerHTML = `
+          <div class="card p-3">
+            <h5 class="fw-bold">${art.title}</h5>
+            <p class="small text-muted mb-2">Created: ${new Date(art.created_at).toLocaleDateString()}</p>
+            <button class="btn btn-sm btn-primary align-self-start" onclick="loadDraftForEditing('${art.id}')">Load Into Editor Workspaces</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
     }
-  };
 
-  document.getElementById('logoutBtn').addEventListener('click', async () => {
-    await signOut();
-    window.location.href = 'index.html'; // [cite: 154]
-  });
+    window.loadDraftForEditing = async function(id) {
+      const { data } = await supabase.from('articles').select('*').eq('id', id).single();
+      if(data) {
+        editingArticleId = data.id;
+        document.getElementById('title').value = data.title;
+        document.getElementById('excerpt').value = data.excerpt || '';
+        document.getElementById('body').value = data.content;
+        document.getElementById('breaking').checked = data.breaking_news;
+        document.getElementById('categorySelect').value = data.category_id || '';
+        switchSection('home');
+      }
+    };
 
-  window.switchSection = function(section) {
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active')); // [cite: 119]
-    document.getElementById(section).classList.add('active'); // [cite: 119]
-    if(section === 'drafts') {
-      getArticles('draft').then(res => renderArticles(res, 'draftsList', 'draft'));
-    }
-  };
-
-  ensureAuth(); // [cite: 155]
-</script>
+    ensureAuth();
+  </script>
 </body>
 </html>

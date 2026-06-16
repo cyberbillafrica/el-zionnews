@@ -7,354 +7,273 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body { background-color: #f8f9fa; }
-    .navbar { box-shadow: 0 2px 4px rgba(0,0,0,.1); }
-    .sidebar { position: sticky; top: 0; height: 100vh; overflow-y: auto; }
-    .notification-badge { position: absolute; top: -8px; right: -8px; }
-    .article-card { transition: transform 0.2s, box-shadow 0.2s; }
-    .article-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.15); }
-    .notification-item { border-left: 4px solid #0d6efd; }
+    .sidebar { min-height: 100vh; box-shadow: 2px 0 5px rgba(0,0,0,.05); background: #fff; }
+    .nav-link { color: #333; border-radius: 4px; margin-bottom: 5px; }
+    .nav-link.active { background-color: #0d6efd; color: #fff !important; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .card { border: none; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
   </style>
 </head>
 <body>
-  <!-- Navigation -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">El Zion Admin Dashboard</a>
-      <div class="d-flex align-items-center gap-3">
-        <div class="position-relative">
-          <button id="notificationBtn" class="btn btn-outline-primary position-relative">
-            Notifications
-            <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">0</span>
-          </button>
-        </div>
-        <span id="userEmail" class="text-muted small"></span>
-        <button id="logoutBtn" class="btn btn-outline-secondary btn-sm">Sign out</button>
-      </div>
-    </div>
-  </nav>
 
   <div class="container-fluid">
     <div class="row">
-      <!-- Sidebar -->
-      <div class="col-md-2 sidebar bg-light border-end p-3">
-        <div class="list-group">
-          <a href="#home" class="list-group-item list-group-item-action active" data-section="home">
-            <i class="bi bi-house"></i> Dashboard
-          </a>
-          <a href="#articles" class="list-group-item list-group-item-action" data-section="articles">
-            <i class="bi bi-file-text"></i> All Articles
-          </a>
-          <a href="#published" class="list-group-item list-group-item-action" data-section="published">
-            <i class="bi bi-check-circle"></i> Published
-          </a>
-          <a href="#categories" class="list-group-item list-group-item-action" data-section="categories">
-            <i class="bi bi-tag"></i> Categories
-          </a>
-          <a href="#tags" class="list-group-item list-group-item-action" data-section="tags">
-            <i class="bi bi-labels"></i> Tags
-          </a>
-          <a href="#users" class="list-group-item list-group-item-action" data-section="users">
-            <i class="bi bi-people"></i> Users
-          </a>
+      <nav class="col-md-3 col-lg-2 sidebar p-3">
+        <h5 class="py-2 border-bottom text-primary fw-bold">El Zion Admin</h5>
+        <p class="small text-muted mb-3" id="userEmail">Loading...</p>
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link active" href="#" data-section="dashboard">📊 Dashboard Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" data-section="articles">📝 All Articles</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" data-section="published">📢 Live Published</a>
+          </li>
+        </ul>
+        <hr>
+        <button id="logoutBtn" class="btn btn-sm btn-danger w-100">Exit System</button>
+      </nav>
+
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+        
+        <div id="dashboard" class="section active">
+          <h2 class="mb-4">System Performance</h2>
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <div class="card bg-primary text-white p-3">
+                <h5>Total Database Assets</h5>
+                <h2 id="totalArticles">0</h2>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card bg-success text-white p-3">
+                <h5>Live Public News</h5>
+                <h2 id="publishedCount">0</h2>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card bg-warning text-dark p-3">
+                <h5>Pending Review Queue</h5>
+                <h2 id="pendingCount">0</h2>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <!-- Main Content -->
-      <div class="col-md-10 p-4">
-        <!-- Dashboard Home -->
-        <section id="home" class="section active">
-          <h3 class="mb-4">Admin Dashboard</h3>
-          <div class="row">
-            <div class="col-md-3">
-              <div class="card mb-3">
-                <div class="card-body">
-                  <h6 class="card-title text-muted">Total Articles</h6>
-                  <p class="card-text"><strong id="totalArticles">0</strong></p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-3">
-              <div class="card mb-3">
-                <div class="card-body">
-                  <h6 class="card-title text-muted">Published</h6>
-                  <p class="card-text"><strong id="publishedCount">0</strong></p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-3">
-              <div class="card mb-3">
-                <div class="card-body">
-                  <h6 class="card-title text-muted">Pending Review</h6>
-                  <p class="card-text"><strong id="pendingCount">0</strong></p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-3">
-              <div class="card mb-3">
-                <div class="card-body">
-                  <h6 class="card-title text-muted">Notifications</h6>
-                  <p class="card-text"><strong id="notificationCount">0</strong></p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Recent Notifications -->
-          <div class="card mt-4">
-            <div class="card-header">
-              <h5 class="card-title mb-0">Recent Admin Notifications</h5>
-            </div>
-            <div id="recentNotifications" class="card-body">
-              <p class="text-muted">No recent notifications.</p>
-            </div>
-          </div>
-        </section>
-
-        <!-- All Articles -->
-        <section id="articles" class="section">
-          <h3 class="mb-4">All Articles</h3>
+        <div id="articles" class="section">
+          <h2 class="mb-4">Master Article Repository</h2>
           <div id="articlesList" class="row"></div>
-        </section>
-
-        <!-- Published Articles -->
-        <section id="published" class="section">
-          <h3 class="mb-4">Published Articles</h3>
-          <div id="publishedList" class="row"></div>
-        </section>
-
-        <!-- Categories -->
-        <section id="categories" class="section">
-          <h3 class="mb-4">Categories</h3>
-          <div id="categoriesContent"></div>
-        </section>
-
-        <!-- Tags -->
-        <section id="tags" class="section">
-          <h3 class="mb-4">Tags</h3>
-          <div id="tagsContent"></div>
-        </section>
-
-        <!-- Users / Profiles -->
-        <section id="users" class="section">
-          <h3 class="mb-4">Users & Roles</h3>
-          <div id="usersContent"></div>
-        </section>
-      </div>
-    </div>
-  </div>
-
-  <!-- Notification Modal -->
-  <div class="modal fade" id="notificationModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">All Notifications</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <div class="modal-body" id="notificationList"></div>
-      </div>
+
+        <div id="published" class="section">
+          <h2 class="mb-4">Live News (Views Analytics)</h2>
+          <div id="publishedList" class="row"></div>
+        </div>
+
+      </main>
     </div>
   </div>
 
-  <!-- Article Editor Modal -->
-  <div class="modal fade" id="articleModal" tabindex="-1">
+  <div class="modal fade" id="articleModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Edit Article</h5>
+          <h5 class="modal-title">Review & Edit Article Alignment</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <form id="adminArticleForm">
-            <div class="mb-3">
-              <label for="editTitle" class="form-label">Title</label>
-              <input type="text" class="form-control" id="editTitle" required>
-            </div>
-            <div class="mb-3">
-              <label for="editBody" class="form-label">Body</label>
-              <textarea class="form-control" id="editBody" rows="6" required></textarea>
-            </div>
-            <div class="mb-3">
-              <label for="editStatus" class="form-label">Status</label>
-              <select class="form-select" id="editStatus">
-                <option value="draft">Draft</option>
-                <option value="review">Review</option>
-                <option value="published">Published</option>
-                <option value="archived">Archived</option>
-              </select>
-            </div>
-          </form>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Headline Title</label>
+            <input type="text" id="editTitle" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Body Paragraphs</label>
+            <textarea id="editBody" class="form-control" rows="8"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Editorial Review Status Update</label>
+            <select id="editStatus" class="form-select">
+              <option value="draft">Draft (Hidden)</option>
+              <option value="pending_review">Pending Review (Staged)</option>
+              <option value="published">Published (Live to Public)</option>
+              <option value="archived">Archived (Removed)</option>
+            </select>
+          </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-danger" id="deleteArticleBtn">Delete</button>
-          <button type="button" class="btn btn-primary" id="saveArticleBtn">Save Changes</button>
+        <div class="modal-footer d-flex justify-content-between">
+          <button type="button" id="deleteArticleBtn" class="btn btn-danger">Purge Article Asset</button>
+          <div>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" id="saveArticleBtn" class="btn btn-primary">Commit Changes</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
-  import { getSession, signOut } from './services/supabase.js';
-  import { isAdmin } from './services/roles.js';
-  import { getArticles, updateArticle, deleteArticle } from './services/articles.js';
+    import { getSession, signOut } from './services/auth.js';
+    import { isAdmin } from './services/roles.js';
+    import { getArticles, updateArticle, deleteArticle } from './services/articles.js';
 
-  let currentUser = null;
-  let editingArticleId = null;
-  const articleModal = new bootstrap.Modal(document.getElementById('articleModal'));
+    let currentUser = null;
+    let editingArticleId = null;
+    const articleModal = new bootstrap.Modal(document.getElementById('articleModal'));
 
-  async function ensureAuth() {
-    try {
-      const { data } = await getSession(); // [cite: 27]
-      const session = data?.session; // [cite: 28]
-      if (!session) { window.location.href = 'index.html'; return; } // [cite: 28]
+    async function ensureAuth() {
+      try {
+        const { data } = await getSession();
+        const session = data?.session;
+        if (!session) { window.location.href = 'index.html'; return; }
 
-      currentUser = session.user; // [cite: 29]
-      document.getElementById('userEmail').textContent = session.user.email; // [cite: 29]
+        currentUser = session.user;
+        document.getElementById('userEmail').textContent = session.user.email;
 
-      // Call database RPC to confirm access safely
-      const validAdmin = await isAdmin();
-      if (!validAdmin) {
-        alert('Access Denied: Administrative privileges required.');
+        const validAdmin = await isAdmin();
+        if (!validAdmin) {
+          alert('Access Denied: Administrative roles required.');
+          window.location.href = 'index.html';
+          return;
+        }
+
+        await loadDashboardStats();
+        setupEventListeners();
+      } catch (err) {
         window.location.href = 'index.html';
+      }
+    }
+
+    async function loadDashboardStats() {
+      try {
+        const totalArticles = await getArticles();
+        const published = totalArticles.filter(a => a.status === 'published');
+        const pending = totalArticles.filter(a => a.status === 'pending_review');
+
+        document.getElementById('totalArticles').textContent = totalArticles.length;
+        document.getElementById('publishedCount').textContent = published.length;
+        document.getElementById('pendingCount').textContent = pending.length;
+      } catch (err) {
+        console.error('Error fetching analytics matrix:', err);
+      }
+    }
+
+    function setupEventListeners() {
+      document.querySelectorAll('[data-section]').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          switchSection(link.dataset.section);
+        });
+      });
+
+      document.getElementById('logoutBtn').addEventListener('click', async () => {
+        await signOut();
+        window.location.href = 'index.html';
+      });
+
+      document.getElementById('saveArticleBtn').addEventListener('click', saveArticleChanges);
+      document.getElementById('deleteArticleBtn').addEventListener('click', handleArticleDelete);
+    }
+
+    window.switchSection = async function(section) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(section).classList.add('active');
+
+      document.querySelectorAll('[data-section]').forEach(link => {
+        link.classList.remove('active');
+        if (link.dataset.section === section) link.classList.add('active');
+      });
+
+      if (section === 'articles') {
+        const data = await getArticles();
+        renderArticlesList(data, 'articlesList');
+      }
+      if (section === 'published') {
+        const data = await getArticles('published');
+        renderArticlesList(data, 'publishedList', true);
+      }
+    };
+
+    function renderArticlesList(articles, containerId, showViews = false) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+
+      if (articles.length === 0) {
+        container.innerHTML = '<p class="text-muted p-3">No records matching criteria found in table cluster.</p>';
         return;
       }
 
-      await loadDashboardStats();
-      setupEventListeners();
-    } catch (err) {
-      window.location.href = 'index.html'; // [cite: 33]
-    }
-  }
-
-  async function loadDashboardStats() {
-    try {
-      // Pull and aggregate structured collections
-      const totalArticles = await getArticles();
-      const published = totalArticles.filter(a => a.status === 'published');
-      const pending = totalArticles.filter(a => a.status === 'pending_review');
-
-      document.getElementById('totalArticles').textContent = totalArticles.length;
-      document.getElementById('publishedCount').textContent = published.length;
-      document.getElementById('pendingCount').textContent = pending.length;
-    } catch (err) {
-      console.error('Error computing dashboard matrix:', err);
-    }
-  }
-
-  function setupEventListeners() {
-    document.querySelectorAll('[data-section]').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault(); // [cite: 45]
-        switchSection(link.dataset.section); // [cite: 45]
-      });
-    });
-
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-      await signOut();
-      window.location.href = 'index.html'; // [cite: 46]
-    });
-
-    document.getElementById('saveArticleBtn').addEventListener('click', saveArticleChanges); // [cite: 48]
-    document.getElementById('deleteArticleBtn').addEventListener('click', handleArticleDelete);
-  }
-
-  window.switchSection = async function(section) {
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active')); // [cite: 48]
-    document.getElementById(section).classList.add('active'); // [cite: 49]
-
-    document.querySelectorAll('[data-section]').forEach(link => {
-      link.classList.remove('active'); // [cite: 49]
-      if (link.dataset.section === section) link.classList.add('active'); // [cite: 49]
-    });
-
-    if (section === 'articles') {
-      const data = await getArticles();
-      renderArticlesList(data, 'articlesList');
-    }
-    if (section === 'published') {
-      const data = await getArticles('published');
-      renderArticlesList(data, 'publishedList', true);
-    }
-  };
-
-  function renderArticlesList(articles, containerId, showViews = false) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = ''; // [cite: 54]
-
-    if (articles.length === 0) {
-      container.innerHTML = '<p class="text-muted">No records found.</p>';
-      return; // [cite: 55]
-    }
-
-    articles.forEach(article => {
-      const card = document.createElement('div');
-      card.className = 'col-md-6 mb-3';
-      card.innerHTML = `
-        <div class="card article-card h-100">
-          <div class="card-body">
-            <h5 class="card-title">${article.title}${article.breaking_news ? ' 🔴 BREAKING' : ''}</h5>
-            <p class="card-text text-muted small">Status: <span class="badge bg-info">${article.status}</span></p>
-            ${showViews ? `<p class="card-text text-muted small">Views: ${article.views || 0}</p>` : ''}
-            <button class="btn btn-sm btn-outline-primary" onclick="editArticleModal('${article.id}')">Review</button>
+      articles.forEach(article => {
+        const card = document.createElement('div');
+        card.className = 'col-md-6 mb-3';
+        card.innerHTML = `
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title fw-bold">${article.title}${article.breaking_news ? ' <span class="badge bg-danger">🔴 BREAKING</span>' : ''}</h5>
+              <p class="card-text text-muted mb-1 small">Category: <strong>${article.categories?.name || 'Unassigned'}</strong></p>
+              <p class="card-text text-muted mb-2 small">Workflow State: <span class="badge bg-secondary">${article.status}</span></p>
+              ${showViews ? `<p class="card-text text-primary small mb-2">Metrics: <strong>${article.views || 0} clicks</strong></p>` : ''}
+              <button class="btn btn-sm btn-outline-primary" onclick="editArticleModal('${article.id}')">Review Record</button>
+            </div>
           </div>
-        </div>
-      `;
-      container.appendChild(card);
-    });
-  }
-
-  window.editArticleModal = async function(articleId) {
-    editingArticleId = articleId; // [cite: 57]
-    const all = await getArticles();
-    const article = all.find(a => a.id === articleId);
-    
-    if (article) {
-      // Re-fetch individual record for core contents
-      import('./services/supabase.js').then(async ({ supabase }) => {
-        const { data } = await supabase.from('articles').select('*').eq('id', articleId).single();
-        document.getElementById('editTitle').value = data.title; // [cite: 59]
-        document.getElementById('editBody').value = data.content || ''; // Maps to content schema field
-        document.getElementById('editStatus').value = data.status; // [cite: 60]
-        articleModal.show(); // [cite: 60]
+        `;
+        container.appendChild(card);
       });
     }
-  };
 
-  async function saveArticleChanges() {
-    const updates = {
-      title: document.getElementById('editTitle').value,
-      content: document.getElementById('editBody').value,
-      status: document.getElementById('editStatus').value
+    window.editArticleModal = async function(articleId) {
+      editingArticleId = articleId;
+      const all = await getArticles();
+      const article = all.find(a => a.id === articleId);
+      
+      if (article) {
+        import('./services/supabase.js').then(async ({ supabase }) => {
+          const { data } = await supabase.from('articles').select('*').eq('id', articleId).single();
+          document.getElementById('editTitle').value = data.title;
+          document.getElementById('editBody').value = data.content || '';
+          document.getElementById('editStatus').value = data.status;
+          articleModal.show();
+        });
+      }
     };
 
-    try {
-      await updateArticle(editingArticleId, updates);
-      alert('Article update verified successfully.');
-      articleModal.hide(); // [cite: 63]
-      await loadDashboardStats(); // [cite: 63]
-      switchSection('articles');
-    } catch (err) {
-      alert('Error committing patch: ' + err.message);
-    }
-  }
+    async function saveArticleChanges() {
+      const updates = {
+        title: document.getElementById('editTitle').value,
+        content: document.getElementById('editBody').value,
+        status: document.getElementById('editStatus').value,
+        published_at: document.getElementById('editStatus').value === 'published' ? new Date().toISOString() : null
+      };
 
-  async function handleArticleDelete() {
-    if (confirm('Permanently purge this item from the database?')) {
       try {
-        await deleteArticle(editingArticleId);
-        alert('Asset wiped.');
-        articleModal.hide(); // [cite: 66]
-        await loadDashboardStats(); // [cite: 66]
+        await updateArticle(editingArticleId, updates);
+        alert('Article mutation compiled and written successfully.');
+        articleModal.hide();
+        await loadDashboardStats();
         switchSection('articles');
       } catch (err) {
-        alert('Drop error: ' + err.message);
+        alert('Data engine save validation failure: ' + err.message);
       }
     }
-  }
 
-  ensureAuth(); // [cite: 79]
-</script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    async function handleArticleDelete() {
+      if (confirm('CRITICAL ACTION: Permanently wipe this record from database clusters? This cannot be undone.')) {
+        try {
+          await deleteArticle(editingArticleId);
+          alert('Asset hard deleted.');
+          articleModal.hide();
+          await loadDashboardStats();
+          switchSection('articles');
+        } catch (err) {
+          alert('Table constraint failure: ' + err.message);
+        }
+      }
+    }
+
+    ensureAuth();
+  </script>
 </body>
 </html>
