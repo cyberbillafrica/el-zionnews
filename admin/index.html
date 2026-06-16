@@ -55,10 +55,8 @@
   </div>
 
   <script type="module">
-    import { signInWithPassword, signInWithMagicLink } from './services/auth.js';
+    import { signInWithPassword, signInWithMagicLink, getSession } from './services/auth.js';
     import { getUserRole } from './services/roles.js';
-    import { getSession } from './services/supabase.js';
-
     const alertBox = document.getElementById('authAlert');
 
     function showAlert(msg, isSuccess = false) {
