@@ -195,315 +195,166 @@
   </div>
 
   <script type="module">
-    import { supabase, getSession } from './supabase.js';
+  import { getSession, signOut } from './services/supabase.js';
+  import { isAdmin } from './services/roles.js';
+  import { getArticles, updateArticle, deleteArticle } from './services/articles.js';
 
-    let currentUser = null;
-    let editingArticleId = null;
-    const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
-    const articleModal = new bootstrap.Modal(document.getElementById('articleModal'));
+  let currentUser = null;
+  let editingArticleId = null;
+  const articleModal = new bootstrap.Modal(document.getElementById('articleModal'));
 
-    async function ensureAuth() {
-      try {
-        const { data } = await getSession();
-        const session = data?.session;
-        if (!session) {
-          window.location.href = 'index.html';
-          return;
-        }
+  async function ensureAuth() {
+    try {
+      const { data } = await getSession(); // [cite: 27]
+      const session = data?.session; // [cite: 28]
+      if (!session) { window.location.href = 'index.html'; return; } // [cite: 28]
 
-        currentUser = session.user;
-        document.getElementById('userEmail').textContent = session.user.email;
+      currentUser = session.user; // [cite: 29]
+      document.getElementById('userEmail').textContent = session.user.email; // [cite: 29]
 
-        // Check if user is admin
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', currentUser.id)
-          .single();
-
-        if (!profile || (profile.role !== 'admin' && profile.role !== 'super_admin')) {
-          alert('You do not have admin access.');
-          window.location.href = 'index.html';
-          return;
-        }
-
-        await loadDashboardStats();
-        setupEventListeners();
-      } catch (err) {
-        console.error('Auth error:', err);
+      // Call database RPC to confirm access safely
+      const validAdmin = await isAdmin();
+      if (!validAdmin) {
+        alert('Access Denied: Administrative privileges required.');
         window.location.href = 'index.html';
-      }
-    }
-
-    async function loadDashboardStats() {
-      try {
-        // Count articles by status
-        const { count: total } = await supabase
-          .from('articles')
-          .select('id', { count: 'exact' });
-
-        const { count: published } = await supabase
-          .from('articles')
-          .select('id', { count: 'exact' })
-          .eq('status', 'published');
-
-        const { count: pending } = await supabase
-          .from('articles')
-          .select('id', { count: 'exact' })
-          .eq('status', 'review');
-
-        // Load notifications
-        const { data: notifications, count: notifCount } = await supabase
-          .from('notifications')
-          .select('*', { count: 'exact' })
-          .eq('admin_id', currentUser.id)
-          .eq('is_read', false)
-          .order('created_at', { ascending: false })
-          .limit(5);
-
-        document.getElementById('totalArticles').textContent = total || 0;
-        document.getElementById('publishedCount').textContent = published || 0;
-        document.getElementById('pendingCount').textContent = pending || 0;
-        document.getElementById('notificationCount').textContent = notifCount || 0;
-
-        if (notifCount > 0) {
-          document.getElementById('notifBadge').textContent = notifCount;
-          document.getElementById('notifBadge').style.display = 'inline-block';
-        }
-
-        // Display recent notifications
-        renderRecentNotifications(notifications || []);
-      } catch (err) {
-        console.error('Error loading stats:', err);
-      }
-    }
-
-    function renderRecentNotifications(notifications) {
-      const container = document.getElementById('recentNotifications');
-      if (notifications.length === 0) {
-        container.innerHTML = '<p class="text-muted">No recent notifications.</p>';
         return;
       }
 
-      container.innerHTML = notifications.map(n => `
-        <div class="notification-item p-2 mb-2 bg-light">
-          <div class="d-flex justify-content-between">
-            <strong>${n.message}</strong>
-            <span class="badge bg-primary">${n.notification_type}</span>
-          </div>
-          <small class="text-muted">${new Date(n.created_at).toLocaleString()}</small>
-        </div>
-      `).join('');
+      await loadDashboardStats();
+      setupEventListeners();
+    } catch (err) {
+      window.location.href = 'index.html'; // [cite: 33]
     }
+  }
 
-    function setupEventListeners() {
-      document.querySelectorAll('[data-section]').forEach(link => {
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          switchSection(link.dataset.section);
-        });
+  async function loadDashboardStats() {
+    try {
+      // Pull and aggregate structured collections
+      const totalArticles = await getArticles();
+      const published = totalArticles.filter(a => a.status === 'published');
+      const pending = totalArticles.filter(a => a.status === 'pending_review');
+
+      document.getElementById('totalArticles').textContent = totalArticles.length;
+      document.getElementById('publishedCount').textContent = published.length;
+      document.getElementById('pendingCount').textContent = pending.length;
+    } catch (err) {
+      console.error('Error computing dashboard matrix:', err);
+    }
+  }
+
+  function setupEventListeners() {
+    document.querySelectorAll('[data-section]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault(); // [cite: 45]
+        switchSection(link.dataset.section); // [cite: 45]
       });
+    });
 
-      document.getElementById('logoutBtn').addEventListener('click', async () => {
-        await supabase.auth.signOut();
-        window.location.href = 'index.html';
-      });
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await signOut();
+      window.location.href = 'index.html'; // [cite: 46]
+    });
 
-      document.getElementById('notificationBtn').addEventListener('click', () => {
-        loadAllNotifications();
-        notificationModal.show();
-      });
+    document.getElementById('saveArticleBtn').addEventListener('click', saveArticleChanges); // [cite: 48]
+    document.getElementById('deleteArticleBtn').addEventListener('click', handleArticleDelete);
+  }
 
-      document.getElementById('saveArticleBtn').addEventListener('click', saveArticleChanges);
-      document.getElementById('deleteArticleBtn').addEventListener('click', deleteArticle);
+  window.switchSection = async function(section) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active')); // [cite: 48]
+    document.getElementById(section).classList.add('active'); // [cite: 49]
+
+    document.querySelectorAll('[data-section]').forEach(link => {
+      link.classList.remove('active'); // [cite: 49]
+      if (link.dataset.section === section) link.classList.add('active'); // [cite: 49]
+    });
+
+    if (section === 'articles') {
+      const data = await getArticles();
+      renderArticlesList(data, 'articlesList');
+    }
+    if (section === 'published') {
+      const data = await getArticles('published');
+      renderArticlesList(data, 'publishedList', true);
+    }
+  };
+
+  function renderArticlesList(articles, containerId, showViews = false) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = ''; // [cite: 54]
+
+    if (articles.length === 0) {
+      container.innerHTML = '<p class="text-muted">No records found.</p>';
+      return; // [cite: 55]
     }
 
-    window.switchSection = function(section) {
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.getElementById(section).classList.add('active');
-
-      document.querySelectorAll('[data-section]').forEach(link => {
-        link.classList.remove('active');
-        if (link.dataset.section === section) link.classList.add('active');
-      });
-
-      if (section === 'articles') loadAllArticles();
-      if (section === 'published') loadPublishedArticles();
-      if (section === 'categories') loadCategories();
-      if (section === 'tags') loadTags();
-      if (section === 'users') loadUsers();
-    };
-
-    async function loadAllArticles() {
-      const { data } = await supabase
-        .from('articles')
-        .select('id, title, status, author_id, created_at, view_count, breaking')
-        .order('created_at', { ascending: false });
-
-      renderArticlesList(data || [], 'articlesList');
-    }
-
-    async function loadPublishedArticles() {
-      const { data } = await supabase
-        .from('articles')
-        .select('id, title, published_at, view_count, breaking')
-        .eq('status', 'published')
-        .order('published_at', { ascending: false });
-
-      renderArticlesList(data || [], 'publishedList', true);
-    }
-
-    function renderArticlesList(articles, containerId, showViews = false) {
-      const container = document.getElementById(containerId);
-      container.innerHTML = '';
-
-      if (articles.length === 0) {
-        container.innerHTML = '<p class="text-muted">No articles.</p>';
-        return;
-      }
-
-      articles.forEach(article => {
-        const card = document.createElement('div');
-        card.className = 'col-md-6 mb-3';
-        card.innerHTML = `
-          <div class="card article-card h-100">
-            <div class="card-body">
-              <h5 class="card-title">${article.title}${article.breaking ? ' 🔴 BREAKING' : ''}</h5>
-              <p class="card-text text-muted small">Status: <span class="badge bg-info">${article.status}</span></p>
-              ${showViews ? `<p class="card-text text-muted small">Views: ${article.view_count}</p>` : ''}
-              <button class="btn btn-sm btn-outline-primary" onclick="editArticleModal('${article.id}')">Edit</button>
-            </div>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    window.editArticleModal = async function(articleId) {
-      editingArticleId = articleId;
-      const { data } = await supabase
-        .from('articles')
-        .select('*')
-        .eq('id', articleId)
-        .single();
-
-      if (data) {
-        document.getElementById('editTitle').value = data.title;
-        document.getElementById('editBody').value = data.body || '';
-        document.getElementById('editStatus').value = data.status;
-        articleModal.show();
-      }
-    };
-
-    async function saveArticleChanges() {
-      const updates = {
-        title: document.getElementById('editTitle').value,
-        body: document.getElementById('editBody').value,
-        status: document.getElementById('editStatus').value
-      };
-
-      const { error } = await supabase
-        .from('articles')
-        .update(updates)
-        .eq('id', editingArticleId);
-
-      if (error) {
-        alert('Error saving: ' + error.message);
-      } else {
-        alert('Article updated successfully!');
-        articleModal.hide();
-        loadDashboardStats();
-        loadAllArticles();
-      }
-    }
-
-    async function deleteArticle() {
-      if (confirm('Are you sure? This cannot be undone.')) {
-        const { error } = await supabase
-          .from('articles')
-          .delete()
-          .eq('id', editingArticleId);
-
-        if (error) {
-          alert('Error deleting: ' + error.message);
-        } else {
-          alert('Article deleted!');
-          articleModal.hide();
-          loadDashboardStats();
-          loadAllArticles();
-        }
-      }
-    }
-
-    async function loadAllNotifications() {
-      const { data } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('admin_id', currentUser.id)
-        .order('created_at', { ascending: false });
-
-      const container = document.getElementById('notificationList');
-      if (!data || data.length === 0) {
-        container.innerHTML = '<p class="text-muted">No notifications.</p>';
-        return;
-      }
-
-      container.innerHTML = data.map(n => `
-        <div class="notification-item p-3 mb-2 bg-light">
-          <div class="d-flex justify-content-between">
-            <strong>${n.message}</strong>
-            <span class="badge bg-primary">${n.notification_type}</span>
-          </div>
-          <small class="text-muted">${new Date(n.created_at).toLocaleString()}</small>
-          <div class="mt-2">
-            <button class="btn btn-sm btn-outline-secondary" onclick="markNotificationRead('${n.id}')">Mark Read</button>
+    articles.forEach(article => {
+      const card = document.createElement('div');
+      card.className = 'col-md-6 mb-3';
+      card.innerHTML = `
+        <div class="card article-card h-100">
+          <div class="card-body">
+            <h5 class="card-title">${article.title}${article.breaking_news ? ' 🔴 BREAKING' : ''}</h5>
+            <p class="card-text text-muted small">Status: <span class="badge bg-info">${article.status}</span></p>
+            ${showViews ? `<p class="card-text text-muted small">Views: ${article.views || 0}</p>` : ''}
+            <button class="btn btn-sm btn-outline-primary" onclick="editArticleModal('${article.id}')">Review</button>
           </div>
         </div>
-      `).join('');
-    }
-
-    window.markNotificationRead = async function(notificationId) {
-      await supabase
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('id', notificationId);
-
-      loadDashboardStats();
-      loadAllNotifications();
-    };
-
-    async function loadCategories() {
-      const { data } = await supabase.from('categories').select('*');
-      const container = document.getElementById('categoriesContent');
-      container.innerHTML = `<p>Categories: ${(data || []).map(c => c.name).join(', ') || 'None'}</p>`;
-    }
-
-    async function loadTags() {
-      const { data } = await supabase.from('tags').select('*');
-      const container = document.getElementById('tagsContent');
-      container.innerHTML = `<p>Tags: ${(data || []).map(t => t.name).join(', ') || 'None'}</p>`;
-    }
-
-    async function loadUsers() {
-      const { data } = await supabase.from('profiles').select('id, email, role, full_name');
-      const container = document.getElementById('usersContent');
-      if (!data || data.length === 0) {
-        container.innerHTML = '<p class="text-muted">No users.</p>';
-        return;
-      }
-
-      container.innerHTML = `
-        <table class="table table-striped">
-          <thead><tr><th>Email</th><th>Name</th><th>Role</th></tr></thead>
-          <tbody>
-            ${data.map(u => `<tr><td>${u.email}</td><td>${u.full_name || 'N/A'}</td><td><span class="badge bg-info">${u.role}</span></td></tr>`).join('')}
-          </tbody>
-        </table>
       `;
-    }
+      container.appendChild(card);
+    });
+  }
 
-    ensureAuth();
-  </script>
+  window.editArticleModal = async function(articleId) {
+    editingArticleId = articleId; // [cite: 57]
+    const all = await getArticles();
+    const article = all.find(a => a.id === articleId);
+    
+    if (article) {
+      // Re-fetch individual record for core contents
+      import('./services/supabase.js').then(async ({ supabase }) => {
+        const { data } = await supabase.from('articles').select('*').eq('id', articleId).single();
+        document.getElementById('editTitle').value = data.title; // [cite: 59]
+        document.getElementById('editBody').value = data.content || ''; // Maps to content schema field
+        document.getElementById('editStatus').value = data.status; // [cite: 60]
+        articleModal.show(); // [cite: 60]
+      });
+    }
+  };
+
+  async function saveArticleChanges() {
+    const updates = {
+      title: document.getElementById('editTitle').value,
+      content: document.getElementById('editBody').value,
+      status: document.getElementById('editStatus').value
+    };
+
+    try {
+      await updateArticle(editingArticleId, updates);
+      alert('Article update verified successfully.');
+      articleModal.hide(); // [cite: 63]
+      await loadDashboardStats(); // [cite: 63]
+      switchSection('articles');
+    } catch (err) {
+      alert('Error committing patch: ' + err.message);
+    }
+  }
+
+  async function handleArticleDelete() {
+    if (confirm('Permanently purge this item from the database?')) {
+      try {
+        await deleteArticle(editingArticleId);
+        alert('Asset wiped.');
+        articleModal.hide(); // [cite: 66]
+        await loadDashboardStats(); // [cite: 66]
+        switchSection('articles');
+      } catch (err) {
+        alert('Drop error: ' + err.message);
+      }
+    }
+  }
+
+  ensureAuth(); // [cite: 79]
+</script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
