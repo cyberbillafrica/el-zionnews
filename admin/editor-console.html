@@ -1,4 +1,3 @@
-html
 <!doctype html>
 <html lang="en">
 <head>
@@ -15,13 +14,47 @@ html
       --ez-light: #f8f9fa;
     }
     body { background-color: #f3f4f6; font-family: system-ui, sans-serif; }
+
+    /* Gradient headings */
+    h4, h5 {
+      background: linear-gradient(90deg, var(--ez-red), var(--ez-gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+    }
+
     .console-header { background: #fff; border-bottom: 2px solid var(--ez-light); }
-    .workspace-card { border: none; border-radius: 14px; background: #fff; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
-    .nav-pill-custom { color: #555; font-weight: 600; padding: 0.6rem 1.2rem; border-radius: 8px; transition: all 0.2s; border: none; background: none; }
+    .workspace-card { border: none; border-radius: 16px; background: #fff; box-shadow: 0 6px 24px rgba(0,0,0,0.05); }
+
+    .nav-pill-custom {
+      color: #555; font-weight: 600; padding: 0.6rem 1.2rem;
+      border-radius: 8px; transition: all 0.2s; border: none; background: none;
+    }
     .nav-pill-custom.active { background: var(--ez-dark); color: #fff; }
+    .nav-pill-custom:hover { background: var(--ez-gold); color: #fff; }
+
     .tab-view { display: none; }
     .tab-view.active { display: block; }
+
     .gold-dot { width: 8px; height: 8px; background-color: var(--ez-gold); border-radius: 50%; display: inline-block; }
+
+    /* Branded buttons */
+    .btn-ez-red {
+      background: var(--ez-red); color: #fff; border-radius: 8px; font-weight: 600;
+    }
+    .btn-ez-red:hover { background: #b02a37; }
+
+    /* Mobile responsiveness */
+    @media (max-width: 576px) {
+      .console-header h5 { font-size: 1rem; }
+      #userEmail { display: none; }
+      .d-inline-flex { flex-direction: column; width: 100%; }
+      .nav-pill-custom { width: 100%; text-align: center; }
+    }
+    @media (max-width: 768px) {
+      .form-control, .form-select { font-size: 1rem; padding: 0.75rem; }
+      textarea { min-height: 200px; }
+    }
   </style>
 </head>
 <body>
@@ -31,81 +64,85 @@ html
     <div class="container d-flex justify-content-between align-items-center">
       <div class="d-flex align-items-center gap-2">
         <span class="gold-dot"></span>
-        <h5 class="mb-0 fw-bold text-dark">Reporter Desk</h5>
+        <h5 class="mb-0">Reporter Desk</h5>
       </div>
       <div class="d-flex align-items-center gap-3">
         <span class="small text-muted d-none d-md-inline" id="userEmail">Validating Desk Identity...</span>
         <button id="logoutBtn" class="btn btn-sm btn-outline-dark d-flex align-items-center gap-2 px-3" style="border-radius: 6px;">
           <span>Logout</span>
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 17 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0v2z"/>
-            <path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/>
-          </svg>
+          <i class="bi bi-box-arrow-right"></i>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Navigation Action Pills Center Bar -->
-  <div class="container my-4 text-center">
-    <div class="d-inline-flex bg-white p-1 rounded-3 shadow-sm border">
-      <button class="nav-pill-custom active" data-tab="create"><i class="bi bi-pencil-square"></i> Compose Stories</button>
-      <button class="nav-pill-custom" data-tab="vault"><i class="bi bi-archive-fill"></i> My Local Drafts (<span id="draftCount">0</span>)</button>
+  <!-- Navigation Action Pills -->
+  <nav class="container my-4 text-center">
+    <div class="d-inline-flex bg-white p-1 rounded-3 shadow-sm border" role="tablist">
+      <button class="nav-pill-custom active" data-tab="create" role="tab" aria-selected="true">
+        <i class="bi bi-pencil-square"></i> Compose Stories
+      </button>
+      <button class="nav-pill-custom" data-tab="vault" role="tab" aria-selected="false">
+        <i class="bi bi-archive-fill"></i> My Local Drafts (<span id="draftCount">0</span>)
+      </button>
     </div>
-  </div>
+  </nav>
 
   <main class="container mb-5">
     
-    <!-- PANE 1: WRITING ENVIRONMENT INTERFACE -->
-    <div id="create" class="tab-view active">
+    <!-- PANE 1: Writing Environment -->
+    <section id="create" class="tab-view active">
       <div class="workspace-card card p-4">
-        <h4 class="fw-bold text-dark mb-4 border-bottom pb-2">New Article Segment</h4>
+        <h4 class="mb-4 border-bottom pb-2">New Article Segment</h4>
         <form id="articleForm">
           <div class="mb-3">
-            <label class="form-label small fw-bold">Headline Title</label>
+            <label class="form-label small fw-bold" for="title">Headline Title</label>
             <input type="text" id="title" class="form-control form-control-lg border-2" required placeholder="Enter the news headline story title...">
           </div>
           <div class="row mb-3 g-3">
             <div class="col-md-6">
-              <label class="form-label small fw-bold">Assigned Feed Category</label>
+              <label class="form-label small fw-bold" for="categorySelect">Assigned Feed Category</label>
               <select id="categorySelect" class="form-select" required></select>
             </div>
             <div class="col-md-6">
-              <label class="form-label small fw-bold">Featured Cover Upload</label>
+              <label class="form-label small fw-bold" for="imageFile">Featured Cover Upload</label>
               <input type="file" id="imageFile" class="form-control" accept="image/*">
             </div>
           </div>
           <div class="mb-3">
-            <label class="form-label small fw-bold">Short List Summary Description</label>
+            <label class="form-label small fw-bold" for="excerpt">Short List Summary Description</label>
             <input type="text" id="excerpt" class="form-control" placeholder="Brief subtitle summary sentence for public listings...">
           </div>
           <div class="mb-3">
-            <label class="form-label small fw-bold">Story Body Narrative Text</label>
+            <label class="form-label small fw-bold" for="body">Story Body Narrative Text</label>
             <textarea id="body" class="form-control" rows="12" required placeholder="Begin drafting your news investigation narrative body here..."></textarea>
           </div>
-          <div class="form-check form-switch p-3 bg-light rounded-3 mb-4 ms-0 d-flex align-items-center justify-content-between">
-            <label class="form-check-label fw-bold text-danger mb-0" for="breaking"><i class="bi bi-lightning-charge-fill"></i> Set Flag As Breaking News Flash</label>
+          <div class="form-check form-switch p-3 bg-light rounded-3 mb-4 d-flex align-items-center justify-content-between">
+            <label class="form-check-label fw-bold text-danger mb-0" for="breaking">
+              <i class="bi bi-lightning-charge-fill"></i> Set Flag As Breaking News Flash
+            </label>
             <input class="form-check-input me-2" type="checkbox" id="breaking">
           </div>
           <div class="d-flex gap-2 justify-content-end">
-            <button type="button" class="btn btn-secondary px-4 fw-semibold" onclick="saveDraft()">Save as Draft</button>
-            <button type="button" class="btn btn-danger px-4 fw-semibold" style="background-color: var(--ez-red);" onclick="publishArticle()">Instant Live Publish</button>
+            <button type="button" class="btn btn-secondary px-4 fw-semibold">Save as Draft</button>
+            <button type="button" class="btn btn-ez-red px-4">Instant Live Publish</button>
           </div>
         </form>
       </div>
-    </div>
+    </section>
 
-    <!-- PANE 2: REPORTERS PRIVATE LOCAL DRAFTS VAULT -->
-    <div id="vault" class="tab-view">
+    <!-- PANE 2: Drafts Vault -->
+    <section id="vault" class="tab-view">
       <div class="workspace-card card p-4">
-        <h4 class="fw-bold text-dark mb-4 border-bottom pb-2">Staged Saved Draft Worksheets</h4>
+        <h4 class="mb-4 border-bottom pb-2">Staged Saved Draft Worksheets</h4>
         <div id="draftsList" class="row g-3"></div>
       </div>
-    </div>
+    </section>
 
   </main>
 
-  <script type="module">
+
+<script type="module">
     import { getSession, signOut } from './services/auth.js';
     import { isEditor } from './services/roles.js';
     import { createArticle, updateArticle, getArticles } from './services/articles.js';
