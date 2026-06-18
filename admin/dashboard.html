@@ -310,31 +310,65 @@
       document.getElementById('saveArticleBtn').addEventListener('click', saveArticleChanges);
       document.getElementById('deleteArticleBtn').addEventListener('click', handleArticleDelete);
       
+    
       // Handle Onboarding Staff Invites
-      document.getElementById('staffInviteForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const alertBox = document.getElementById('inviteAlert');
-        alertBox.style.display = 'none';
-        const email = document.getElementById('inviteEmail').value;
-        const role = document.getElementById('inviteRole').value;
+document.getElementById('codeGeneratorForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const assignedRole = document.getElementById('inviteRole').value;
+  
+  // Generate a clean, random 8-character token string
+  const customCode = 'EZ-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + Math.floor(10 + Math.random() * 90);
 
-        // Use Supabase built-in link generation engine
-        const { data, error } = await supabase.auth.admin.inviteUserByEmail(email, {
-          redirectTo: window.location.origin + '/admin/index.html',
-          data: { role: role } // Pass profile role configuration into custom metadata
-        });
+  // Insert into your pre-existing invitation table
+  const { error } = await supabase
+    .from('invitation_codes')
+    .insert([{ 
+      code: customCode, 
+      role: assignedRole, 
+      is_used: false 
+    }]);
 
-        if (error) {
-          alertBox.className = "alert alert-danger mt-2";
-          alertBox.textContent = "Invite Failed: " + error.message;
-        } else {
-          alertBox.className = "alert alert-success mt-2";
-          alertBox.textContent = `Success! Onboarding verification dispatch link sent to ${email}`;
-          document.getElementById('staffInviteForm').reset();
-        }
-        alertBox.style.display = 'block';
-      });
-    }
+  if (error) {
+    alert('Failed to insert code: ' + error.message);
+  } else {
+    alert(`Code Generated! Hand this token to your editor: ${customCode}`);
+    renderInvitationCodes();
+  }
+});
+
+// Update your existing switchSection function to fetch codes when opening staff panel
+async function renderInvitationCodes() {
+  const tbody = document.getElementById('codesTableBody');
+  tbody.innerHTML = '';
+  
+  const { data, error } = await supabase
+    .from('invitation_codes')
+    .select('*')
+    .eq('is_used', false);
+
+  if (error || !data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" class="text-muted small text-center">No unused validation codes active.</td></tr>';
+    return;
+  }
+
+  data.forEach(item => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><code class="text-danger fw-bold">${item.code}</code></td>
+      <td><span class="badge bg-dark">${item.role}</span></td>
+      <td>
+        <button class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText('${item.code}'); alert('Copied!');">
+          <i class="bi bi-copy"></i> Copy
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Modify your section router listener inside setupEventListeners:
+// components routing change inside switchSection handler:
+if (section === 'staff') renderInvitationCodes();
 
     window.switchSection = async function(section) {
       document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
