@@ -134,7 +134,7 @@
 
   <script type="module">
     import { signInWithPassword, signInWithMagicLink, getSession } from './services/auth.js';
-    import { getUserRole } from './services/roles.js';
+    import { getUserRole, isAdmin, isEditor } from './services/roles.js';
     import { supabase } from './services/supabase.js';
 
     const alertBox = document.getElementById('authAlert');
