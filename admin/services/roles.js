@@ -13,7 +13,6 @@ export async function getUserRole() {
       .eq('id', user.id)
       .maybeSingle();
 
-    // IMPORTANT CHANGE: do NOT fail on temporary issues
     if (error) {
       console.error("Profile fetch error:", error);
       return null;
@@ -25,4 +24,18 @@ export async function getUserRole() {
     console.error("Role system crash:", err);
     return null;
   }
+}
+
+export async function isAdmin() {
+  const role = await getUserRole();
+  return role === 'admin';
+}
+
+export async function isEditor() {
+  const role = await getUserRole();
+  return (
+    role === 'editor' ||
+    role === 'admin' ||
+    role === 'author'
+  );
 }
