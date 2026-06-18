@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Staff Enrollment Portal - El Zion News</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #1a1d20; height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .auth-card { background: white; border-radius: 16px; padding: 2.5rem; width: 100%; max-width: 420px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+  </style>
+</head>
+<body>
+
+  <div class="auth-card">
+    <div class="text-center mb-4">
+      <h3 class="fw-bold text-dark mb-1">Staff Access Registry</h3>
+      <p class="text-muted small">Input your designated dashboard credentials and validation token</p>
+    </div>
+    
+    <form id="registerForm">
+      <div class="mb-3">
+        <label class="form-label small fw-bold">Secure Invitation Token</label>
+        <input type="text" id="invitationCode" class="form-control text-center fw-bold text-danger border-2" placeholder="EZ-XXXXXX-XX" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label small fw-bold">Email Address</label>
+        <input type="email" id="email" class="form-control" required placeholder="name@elzionnews.com">
+      </div>
+      <div class="mb-4">
+        <label class="form-label small fw-bold">Create Security Password</label>
+        <input type="password" id="password" class="form-control" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn btn-danger w-100 fw-bold py-2">Complete Profile Activation</button>
+    </form>
+    <div class="text-center mt-3"><a href="index.html" class="small text-muted text-decoration-none">Already have a desk account? Login</a></div>
+  </div>
+
+  <script type="module">
+    import { supabase } from './services/supabase.js';
+
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const codeInput = document.getElementById('invitationCode').value.trim();
+      const emailInput = document.getElementById('email').value.trim();
+      const passwordInput = document.getElementById('password').value;
+
+      // 1. Verify the code exists and hasn't been used yet
+      const { data: invite, error: inviteError } = await supabase
+        .from('invitation_codes')
+        .select('*')
+        .eq('code', codeInput)
+        .eq('is_used', false)
+        .single();
+
+      if (inviteError || !invite) {
+        alert('Validation Error: This invitation code is invalid or has already been used.');
+        return;
+      }
+
+      // 2. Code is good! Now create the user in Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: emailInput,
+        password: passwordInput,
+        options: {
+          // Pass the role metadata straight into user data
+          data: { role: invite.role } 
+        }
+      });
+
+      if (authError) {
+        alert('Authentication Error: ' + authError.message);
+        return;
+      }
+
+      const newUser = authData.user;
+
+      if (newUser) {
+        // 3. Mark the code as consumed so it can't be used again
+        await supabase
+          .from('invitation_codes')
+          .update({ is_used: true, used_by_email: emailInput })
+          .eq('id', invite.id);
+
+        // 4. Double check or update your custom profiles table if your system utilizes one
+        await supabase
+          .from('profiles')
+          .insert([{ id: newUser.id, email: emailInput, role: invite.role }]);
+
+        alert('Registration complete! Welcome to the team. Redirecting to your console login desk...');
+        window.location.href = 'index.html';
+      }
+    });
+  </script>
+</body>
+</html>
