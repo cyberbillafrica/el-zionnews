@@ -1,7 +1,4 @@
-import { getUserRole, isAdmin, isEditor } from './services/roles.js';
-
-
-/**
+import { supabase } from './supabase.js';
  * Gets the current user's role by checking both session metadata and the database profile
  */
 async function getUserRole() {
