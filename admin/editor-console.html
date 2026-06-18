@@ -15,15 +15,11 @@
     }
     body { background-color: #f3f4f6; font-family: system-ui, sans-serif; }
 
-    /* Gradient header bar */
     .console-header {
       background: linear-gradient(90deg, var(--ez-red), var(--ez-gold));
       color: #fff;
     }
-    .console-header h5 {
-      color: #fff;
-      font-weight: 700;
-    }
+    .console-header h5 { color: #fff; font-weight: 700; }
 
     .workspace-card {
       border: none; border-radius: 16px; background: #fff;
@@ -42,13 +38,9 @@
 
     .gold-dot { width: 8px; height: 8px; background-color: var(--ez-gold); border-radius: 50%; display: inline-block; }
 
-    /* Branded buttons */
-    .btn-ez-red {
-      background: var(--ez-red); color: #fff; border-radius: 8px; font-weight: 600;
-    }
-    .btn-ez-red:hover { background: #b02a37; }
+    .btn-ez-red { background: var(--ez-red); color: #fff; border-radius: 8px; font-weight: 600; }
+    .btn-ez-red:hover { background: #b02a37; color: #fff; }
 
-    /* Mobile responsiveness */
     @media (max-width: 576px) {
       .console-header h5 { font-size: 1rem; }
       #userEmail { display: none; }
@@ -63,7 +55,6 @@
 </head>
 <body>
 
-  <!-- Console Top Header Bar -->
   <header class="console-header p-3 sticky-top shadow-sm">
     <div class="container d-flex justify-content-between align-items-center">
       <div class="d-flex align-items-center gap-2">
@@ -80,29 +71,57 @@
     </div>
   </header>
 
-  <!-- Navigation Action Pills -->
   <nav class="container my-4 text-center">
     <div class="d-inline-flex bg-white p-1 rounded-3 shadow-sm border" role="tablist">
       <button class="nav-pill-custom active" data-tab="create" role="tab" aria-selected="true">
         <i class="bi bi-pencil-square"></i> Compose Stories
       </button>
       <button class="nav-pill-custom" data-tab="vault" role="tab" aria-selected="false">
-        <i class="bi bi-archive-fill"></i> My Local Drafts (<span id="draftCount">0</span>)
+        <i class="bi bi-archive-fill"></i> My Drafts (<span id="draftCount">0</span>)
       </button>
     </div>
   </nav>
 
   <main class="container mb-5">
-    
-    <!-- PANE 1: Writing Environment -->
+
     <section id="create" class="tab-view active">
       <div class="workspace-card card p-4">
         <h4 class="mb-4 border-bottom pb-2">New Article Segment</h4>
-        <!-- form content unchanged -->
+        <form id="articleForm">
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Headline</label>
+            <input type="text" id="title" class="form-control form-control-lg" required placeholder="Story headline...">
+          </div>
+          <div class="row mb-3 g-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Category</label>
+              <select id="categorySelect" class="form-select" required></select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Featured Image</label>
+              <input type="file" id="imageFile" class="form-control" accept="image/*">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Excerpt</label>
+            <input type="text" id="excerpt" class="form-control" placeholder="Brief summary...">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Article Body</label>
+            <textarea id="body" class="form-control" rows="10" required></textarea>
+          </div>
+          <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" id="breaking">
+            <label class="form-check-label text-danger fw-bold" for="breaking">Breaking News</label>
+          </div>
+          <div class="d-flex gap-2 justify-content-end">
+            <button type="button" class="btn btn-secondary px-4" onclick="saveDraft()">Save Draft</button>
+            <button type="button" class="btn btn-ez-red px-4" onclick="publishArticle()">Publish Live</button>
+          </div>
+        </form>
       </div>
     </section>
 
-    <!-- PANE 2: Drafts Vault -->
     <section id="vault" class="tab-view">
       <div class="workspace-card card p-4">
         <h4 class="mb-4 border-bottom pb-2">Staged Saved Draft Worksheets</h4>
@@ -112,8 +131,8 @@
 
   </main>
 
-
-<script type="module">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
     import { getSession, signOut } from './services/auth.js';
     import { isEditor } from './services/roles.js';
     import { createArticle, updateArticle, getArticles } from './services/articles.js';
@@ -132,7 +151,11 @@
         document.getElementById('userEmail').textContent = currentUser.email;
 
         if (!(await isEditor())) {
-          alert('System Context Error: Security level validation mapping verified invalid.');
+          // FIX Bug 2 + Bug 4: Sign out before redirecting so index.html
+          // doesn't detect an active session and loop back here
+          console.error('Editor auth failed: role check returned false for', currentUser.email);
+          await supabase.auth.signOut();
+          alert('Access Denied: Your account does not have editor or author access.');
           window.location.href = 'index.html';
           return;
         }
@@ -140,7 +163,13 @@
         await populateCategories();
         await loadStats();
         setupNavigationTabs();
-      } catch (err) { window.location.href = 'index.html'; }
+      } catch (err) {
+        // FIX Bug 4: Log the real error instead of silently swallowing it
+        console.error('Editor console auth error:', err);
+        // Sign out to break any loop caused by a corrupt/stale session
+        await supabase.auth.signOut();
+        window.location.href = 'index.html';
+      }
     }
 
     async function populateCategories() {
@@ -189,9 +218,12 @@
     };
 
     window.publishArticle = async function() {
-      if (!document.getElementById('title').value || !document.getElementById('body').value) { alert('Title and Content required.'); return; }
+      if (!document.getElementById('title').value || !document.getElementById('body').value) {
+        alert('Title and content are required.');
+        return;
+      }
       const payload = await packageFormData();
-      payload.status = 'published'; // Send direct to public feed instantly
+      payload.status = 'published';
       payload.published_at = new Date().toISOString();
 
       if (editingArticleId) await updateArticle(editingArticleId, payload);
@@ -231,7 +263,7 @@
         const listEl = document.getElementById('draftsList');
         listEl.innerHTML = '';
         if (list.length === 0) { listEl.innerHTML = '<div class="text-muted p-2">No drafts found.</div>'; return; }
-        
+
         list.forEach(item => {
           const card = document.createElement('div');
           card.className = 'col-md-6';
