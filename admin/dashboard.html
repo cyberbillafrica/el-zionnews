@@ -86,29 +86,15 @@
 
     .logout-area {
         margin-left: auto;
-        padding-right: 2px; /* little margin from right edge */
+        padding-right: 3px; /* little margin from right edge */
     }
 
     #logoutBtn {
-        padding-left: 10px !important;
-        padding-right: 5px !important;
+        padding-left: 5px !important;
+        padding-right:10px !important;
     }
 }
 </style>
-
-  <!--<nav class="navbar navbar-dark sticky-top main-header p-3 shadow-sm">
-    <div class="container-fluid">
-      <button class="navbar-toggler d-md-none me-2" type="button" id="mobileMenuToggle"><span class="navbar-toggler-icon"></span></button>
-      <a class="navbar-brand navbar-brand-custom fw-extrabold text-white fs-4" href="#">EL-ZION <span>NEWS</span></a>
-      <div class="d-flex align-items-center gap-3">
-        <span class="text-light small d-none d-sm-inline" id="userEmail">Loading Profile...</span>
-        <button id="logoutBtn" class="btn btn-outline-light text-danger btn-sm d-flex align-items-center gap-2 px-3 border-secondary">
-          <span>Logout</span>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 17 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0v2z"/><path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/></svg>
-        </button>
-      </div>
-    </div>
-  </nav> -->
 
   <div class="container-fluid">
     <div class="row">
@@ -152,11 +138,11 @@
               </div>
               <div class="row mb-3 g-3">
                 <div class="col-md-6">
-                  <label class="form-label small fw-bold">Target Category</label>
+                  <label class="form-label small fw-bold">Select News Category</label>
                   <select id="compCategorySelect" class="form-select" required></select>
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label small fw-bold">Featured Image</label>
+                  <label class="form-label small fw-bold">Upload Featured Image</label>
                   <input type="file" id="compImageFile" class="form-control" accept="image/*">
                 </div>
               </div>
@@ -165,7 +151,7 @@
                 <input type="text" id="compExcerpt" class="form-control" placeholder="Brief summary...">
               </div>
               <div class="mb-3">
-                <label class="form-label small fw-bold">Narrative Content Body</label>
+                <label class="form-label small fw-bold">News Content Details</label>
                 <textarea id="compBody" class="form-control" rows="8" required></textarea>
               </div>
               
@@ -173,7 +159,7 @@
               <div class="bg-light p-3 rounded-3 mb-3 border">
                 <h6 class="fw-bold text-dark mb-2"><i class="bi bi-search text-primary"></i> Search Engine Optimization (SEO)</h6>
                 <div class="mb-2">
-                  <label class="small fw-semibold text-muted">SEO Title Tag</label>
+                  <label class="small fw-semibold text-muted">SEO Meta Title</label>
                   <input type="text" id="compSeoTitle" class="form-control form-control-sm" placeholder="Meta title for Google...">
                 </div>
                 <div>
