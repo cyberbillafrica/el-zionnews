@@ -43,7 +43,19 @@
   <script type="module">
     import { supabase } from './services/supabase.js';
 
-   document.getElementById('registerForm').addEventListener('submit', async (e) => {
+   const togglePassword = document.querySelector('#togglePassword');
+  const password = document.querySelector('#password');
+
+  togglePassword.addEventListener('click', function () {
+    // toggle the type attribute
+    const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+    password.setAttribute('type', type);
+
+    // toggle the button text
+    this.textContent = type === 'password' ? 'Show' : 'Hide';
+  });
+    
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const codeInput = document.getElementById('invitationCode').value.trim();
   const emailInput = document.getElementById('email').value.trim();
