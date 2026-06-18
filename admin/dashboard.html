@@ -150,33 +150,44 @@
           </div>
         </div>
 
-        <!-- INVITE STAFF SYSTEMS -->
-        <div id="staff" class="section-view">
-          <div class="card border-0 shadow-sm p-4 rounded-4" style="max-width: 550px;">
-            <h4 class="fw-bold mb-2 text-dark"><i class="bi bi-person-plus-fill text-danger"></i> Add New Staff Member</h4>
-            <p class="text-muted small">This triggers an onboarding account link sent straight to your new writer's inbox.</p>
-            <form id="staffInviteForm">
-              <div class="mb-3">
-                <label class="form-label small fw-bold">Writers Email Address</label>
-                <input type="email" id="inviteEmail" class="form-control" required placeholder="editor@elzionnews.com">
-              </div>
-              <div class="mb-4">
-                <label class="form-label small fw-bold">Platform Workspace Role</label>
-                <select id="inviteRole" class="form-select" required>
-                  <option value="editor">Editor (Can write and publish directly)</option>
-                  <option value="author">Author (Standard writer access)</option>
-                  <option value="admin">Admin (Co-Manager access)</option>
-                </select>
-              </div>
-              <button type="submit" class="btn btn-danger w-100 fw-bold">Generate & Dispatch Invite Link</button>
-            </form>
-            <div id="inviteAlert" class="alert mt-3 small text-center" style="display: none;"></div>
+    <!-- NEW STAFF SECTION-->
+<div id="staff" class="section-view">
+  <div class="row g-4">
+    <!-- Generator Form -->
+    <div class="col-md-5">
+      <div class="card border-0 shadow-sm p-4 rounded-4">
+        <h4 class="fw-bold mb-2 text-dark"><i class="bi bi-ticket-perforated-fill text-danger"></i> Mint Staff Invite Code</h4>
+        <p class="text-muted small">Generate a token to hand over to your new staff member for their registration bypass.</p>
+        <form id="codeGeneratorForm">
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Intended Staff Role</label>
+            <select id="inviteRole" class="form-select" required>
+              <option value="admin">Admin (Co-Manager access)</option>
+              <option value="editor">Editor (Direct Live Publish Control)</option>
+              <option value="author">Author (Standard Draft Writer)</option>
+            </select>
           </div>
+          <button type="submit" class="btn btn-danger w-100 fw-bold">Generate Code Asset</button>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Active Codes List -->
+    <div class="col-md-7">
+      <div class="card border-0 shadow-sm p-4 rounded-4">
+        <h5 class="fw-bold mb-3">Unused Registry Codes</h5>
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead><tr><th>Token Code</th><th>Assigned Role</th><th>Action</th></tr></thead>
+            <tbody id="codesTableBody">
+              <tr><td colspan="3" class="text-muted small text-center">No active codes generated.</td></tr>
+            </tbody>
+          </table>
         </div>
-
-      </main>
+      </div>
     </div>
   </div>
+</div>
 
   <!-- EDIT MODAL WITH SEO FIELDS -->
   <div class="modal fade" id="articleModal" tabindex="-1" aria-hidden="true">
