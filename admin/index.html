@@ -174,18 +174,23 @@
       }
     });
 
-    // Unified Routing Core Engine
+    // Unified Routing Core Engine (FIXED FOR THE INFINITE LOOP)
     async function routeUserByRole() {
       try {
         const role = await getUserRole();
+        
         if (role === 'super_admin' || role === 'admin') {
           window.location.href = 'dashboard.html';
         } else if (role === 'editor' || role === 'author') {
           window.location.href = 'editor-console.html';
         } else {
-          showAlert('Access Denied: Your staff profile role configuration is blank.');
+          // BREAK THE LOOP: Clear active credentials if profile mapping is missing
+          await supabase.auth.signOut();
+          showAlert('Access Denied: Your staff profile role configuration is blank or unauthorized.');
         }
       } catch (err) {
+        // BREAK THE LOOP: Stop running on initialization crashes
+        await supabase.auth.signOut();
         showAlert('Routing authentication failure: ' + err.message);
       }
     }
@@ -202,7 +207,7 @@
       // 2. Fallback check for normal active sessions
       const { data } = await getSession();
       if (data?.session) {
-        routeUserByRole();
+        await routeUserByRole();
       }
     });
 
