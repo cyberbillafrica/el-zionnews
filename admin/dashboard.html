@@ -251,7 +251,10 @@
         document.getElementById('userEmail').textContent = currentUser.email;
 
         // Verify Administrator security context clearance mapping
-        if (!(await isAdmin())) { 
+        if (!(await isAdmin())) {
+          // Sign out before redirect — without this, a valid but non-admin session
+          // causes index.html to re-route back here, creating an infinite loop
+          await supabase.auth.signOut();
           alert('Access Denied: Admin context validation failed.');
           window.location.href = 'index.html'; 
           return; 
@@ -260,8 +263,10 @@
         await loadDashboardStats();
         await syncCategoriesDropdown();
         setupEventListeners();
-      } catch (err) { 
+      } catch (err) {
         console.error("Auth initialization error:", err);
+        // Sign out to prevent redirect loop — clear any stale session state
+        await supabase.auth.signOut();
         window.location.href = 'index.html'; 
       }
     }
