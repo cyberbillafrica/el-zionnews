@@ -27,9 +27,14 @@
         <input type="email" id="email" class="form-control" required placeholder="name@elzionnews.com">
       </div>
       <div class="mb-4">
-        <label class="form-label small fw-bold">Create Security Password</label>
-        <input type="password" id="password" class="form-control" required placeholder="••••••••">
-      </div>
+  <label class="form-label small fw-bold">Create Password</label>
+  <div class="input-group">
+    <input type="password" id="password" class="form-control" required placeholder="••••••••">
+    <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+      Show Password
+    </button>
+  </div>
+</div>
       <button type="submit" class="btn btn-danger w-100 fw-bold py-2">Complete Profile Activation</button>
     </form>
     <div class="text-center mt-3"><a href="index.html" class="small text-muted text-decoration-none">Already have a desk account? Login</a></div>
@@ -38,58 +43,73 @@
   <script type="module">
     import { supabase } from './services/supabase.js';
 
-    document.getElementById('registerForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const codeInput = document.getElementById('invitationCode').value.trim();
-      const emailInput = document.getElementById('email').value.trim();
-      const passwordInput = document.getElementById('password').value;
+   document.getElementById('registerForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const codeInput = document.getElementById('invitationCode').value.trim();
+  const emailInput = document.getElementById('email').value.trim();
+  const passwordInput = document.getElementById('password').value;
 
-      // 1. Verify the code exists and hasn't been used yet
-      const { data: invite, error: inviteError } = await supabase
-        .from('invitation_codes')
-        .select('*')
-        .eq('code', codeInput)
-        .eq('is_used', false)
-        .single();
+  // 1. Fetch using your exact schema criteria: "active" equals true
+  const { data: invite, error: inviteError } = await supabase
+    .from('invitation_codes')
+    .select('*')
+    .eq('code', codeInput)
+    .eq('active', true)   // <-- FIXED: Changed from is_used to active
+    .maybeSingle();       // Uses maybeSingle to handle errors gracefully if none found
 
-      if (inviteError || !invite) {
-        alert('Validation Error: This invitation code is invalid or has already been used.');
-        return;
-      }
+  if (inviteError || !invite) {
+    alert('Validation Error: This registration code is invalid, expired, or has been deactivated.');
+    return;
+  }
 
-      // 2. Code is good! Now create the user in Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: emailInput,
-        password: passwordInput,
-        options: {
-          // Pass the role metadata straight into user data
-          data: { role: invite.role } 
-        }
-      });
+  // 2. Safely inspect usage limits and tracking counts against your schema columns
+  if (invite.uses !== null && invite.max_uses !== null && invite.uses >= invite.max_uses) {
+    alert('Validation Error: This registration code has hit its maximum allowed usage threshold.');
+    return;
+  }
 
-      if (authError) {
-        alert('Authentication Error: ' + authError.message);
-        return;
-      }
+  if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
+    alert('Validation Error: This registration code has expired.');
+    return;
+  }
 
-      const newUser = authData.user;
+  // 3. Register user credentials safely in Supabase Auth
+  const { data: authData, error: authError } = await supabase.auth.signUp({
+    email: emailInput,
+    password: passwordInput,
+    options: { data: { role: invite.role } }
+  });
 
-      if (newUser) {
-        // 3. Mark the code as consumed so it can't be used again
-        await supabase
-          .from('invitation_codes')
-          .update({ is_used: true, used_by_email: emailInput })
-          .eq('id', invite.id);
+  if (authError) {
+    alert('Authentication Error: ' + authError.message);
+    return;
+  }
 
-        // 4. Double check or update your custom profiles table if your system utilizes one
-        await supabase
-          .from('profiles')
-          .insert([{ id: newUser.id, email: emailInput, role: invite.role }]);
+  const newUser = authData.user;
 
-        alert('Registration complete! Welcome to the team. Redirecting to your console login desk...');
-        window.location.href = 'index.html';
-      }
-    });
+  if (newUser) {
+    // 4. Calculate the updated utilization tracking counter metrics
+    const nextUsageCount = (invite.uses || 0) + 1;
+    const shouldKeepActive = invite.max_uses ? (nextUsageCount < invite.max_uses) : false;
+    
+    // Update the validation token tracking row inside your schema
+    await supabase
+      .from('invitation_codes')
+      .update({ 
+        uses: nextUsageCount,
+        active: shouldKeepActive 
+      })
+      .eq('id', invite.id);
+
+    // 5. Create or sync your companion user profile layout mapping
+    await supabase
+      .from('profiles')
+      .insert([{ id: newUser.id, email: emailInput, role: invite.role }]);
+
+    alert('Profile enrollment successfully activated! Welcome to the team. Redirecting to login desk...');
+    window.location.href = 'index.html';
+  }
+});
   </script>
 </body>
 </html>
