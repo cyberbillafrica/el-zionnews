@@ -3,7 +3,7 @@ import { supabase } from './supabase.js';
 /**
  * Gets the current user's role by checking both session metadata and the database profile
  */
-async function getUserRole() {
+export async function getUserRole() {
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error || !session) return null;
 
@@ -31,7 +31,6 @@ async function getUserRole() {
 
   return null;
 }
-
 /**
  * Verifies if the user has Administrator access
  */
