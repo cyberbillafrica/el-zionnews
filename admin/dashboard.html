@@ -225,6 +225,7 @@
     </div>
   </div>
 
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
     import { getSession, signOut } from './services/auth.js';
@@ -238,52 +239,10 @@
     const articleModal = new bootstrap.Modal(document.getElementById('articleModal'));
     const sideMenu = document.getElementById('sidebarMenu');
 
+    // Mobile Menu Toggle Responsive Handler
     document.getElementById('mobileMenuToggle').addEventListener('click', () => sideMenu.classList.toggle('show'));
 
-    // ─── FIX 2: switchSection declared at module top level so all callers can reach it ───
-    window.switchSection = async function(section) {
-      document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
-      document.getElementById(section).classList.add('active');
-      document.querySelectorAll('[data-section]').forEach(l => {
-        l.classList.remove('active');
-        if (l.dataset.section === section) l.classList.add('active');
-      });
-      if (section === 'articles') renderArticlesList(await getArticles(), 'articlesList');
-      if (section === 'comments') renderCommentsQueue();
-      // FIX 3: staff routing now correctly lives inside switchSection where `section` is defined
-      if (section === 'staff') renderInvitationCodes();
-    };
-
-    // ─── FIX 4: renderInvitationCodes declared at module top level ───
-    async function renderInvitationCodes() {
-      const tbody = document.getElementById('codesTableBody');
-      tbody.innerHTML = '';
-
-      const { data, error } = await supabase
-        .from('invitation_codes')
-        .select('*')
-        .eq('is_used', false);
-
-      if (error || !data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="text-muted small text-center">No unused validation codes active.</td></tr>';
-        return;
-      }
-
-      data.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><code class="text-danger fw-bold">${item.code}</code></td>
-          <td><span class="badge bg-dark">${item.role}</span></td>
-          <td>
-            <button class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText('${item.code}'); alert('Copied!');">
-              <i class="bi bi-copy"></i> Copy
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
+    // --- Core Security Authorization Wrapper ---
     async function ensureAuth() {
       try {
         const { data } = await getSession();
@@ -291,13 +250,23 @@
         currentUser = data.session.user;
         document.getElementById('userEmail').textContent = currentUser.email;
 
-        if (!(await isAdmin())) { window.location.href = 'index.html'; return; }
+        // Verify Administrator security context clearance mapping
+        if (!(await isAdmin())) { 
+          alert('Access Denied: Admin context validation failed.');
+          window.location.href = 'index.html'; 
+          return; 
+        }
+        
         await loadDashboardStats();
         await syncCategoriesDropdown();
         setupEventListeners();
-      } catch (err) { window.location.href = 'index.html'; }
+      } catch (err) { 
+        console.error("Auth initialization error:", err);
+        window.location.href = 'index.html'; 
+      }
     }
 
+    // --- Dropdown Population Queries ---
     async function syncCategoriesDropdown() {
       const dropdown = document.getElementById('compCategorySelect');
       dropdown.innerHTML = '<option value="">-- Choose Category --</option>';
@@ -305,6 +274,7 @@
       if (data) data.forEach(c => dropdown.innerHTML += `<option value="${c.id}">${c.name}</option>`);
     }
 
+    // --- Operational Statistics Matrix counters ---
     async function loadDashboardStats() {
       const totalArticles = await getArticles();
       document.getElementById('totalArticles').textContent = totalArticles.length;
@@ -312,10 +282,11 @@
       document.getElementById('pendingCount').textContent = totalArticles.filter(a => a.status === 'pending_review').length;
     }
 
+    // --- Express Content Composer Form Submissions ---
     window.submitAdminArticle = async function(statusTarget) {
       const titleEl = document.getElementById('compTitle').value;
       const bodyEl = document.getElementById('compBody').value;
-      if (!titleEl || !bodyEl) return alert('Headline and body required.');
+      if (!titleEl || !bodyEl) return alert('Headline and body content copy are strictly required.');
 
       let fileUrl = null;
       const imageNode = document.getElementById('compImageFile');
@@ -341,13 +312,28 @@
       if (fileUrl) payload.featured_image = fileUrl;
 
       await createArticle(payload);
-      alert('Article created!');
+      alert('Article recorded and deployed successfully!');
       document.getElementById('adminArticleForm').reset();
       await loadDashboardStats();
       switchSection('dashboard');
     };
 
-    // ─── FIX 5: setupEventListeners is clean — no stray code or nested function declarations ───
+    // --- Centralized Section Routing Logic ---
+    window.switchSection = async function(section) {
+      document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
+      document.getElementById(section).classList.add('active');
+      document.querySelectorAll('[data-section]').forEach(l => {
+        l.classList.remove('active');
+        if (l.dataset.section === section) l.classList.add('active');
+      });
+      
+      // Dispatch content fetch actions based on active panel route target
+      if (section === 'articles') renderArticlesList(await getArticles(), 'articlesList');
+      if (section === 'comments') renderCommentsQueue();
+      if (section === 'staff') renderInvitationCodes();
+    };
+
+    // --- Navigation & Core UI Event Bindings ---
     function setupEventListeners() {
       document.querySelectorAll('[data-section]').forEach(link => {
         link.addEventListener('click', (e) => {
@@ -356,37 +342,80 @@
           switchSection(link.dataset.section);
         });
       });
-
-      document.getElementById('logoutBtn').addEventListener('click', async () => {
-        await signOut();
-        window.location.href = 'index.html';
-      });
-
+      
+      document.getElementById('logoutBtn').addEventListener('click', async () => { await signOut(); window.location.href = 'index.html'; });
       document.getElementById('saveArticleBtn').addEventListener('click', saveArticleChanges);
       document.getElementById('deleteArticleBtn').addEventListener('click', handleArticleDelete);
-
+      
+      // Staff Invite Generator form binding matching reuse count schema layout
       document.getElementById('codeGeneratorForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const assignedRole = document.getElementById('inviteRole').value;
+        
+        // Generate a clean alphanumeric uppercase asset token code sequence
         const customCode = 'EZ-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + Math.floor(10 + Math.random() * 90);
 
         const { error } = await supabase
           .from('invitation_codes')
-          .insert([{ code: customCode, role: assignedRole, is_used: false }]);
+          .insert([{ 
+            code: customCode, 
+            role: assignedRole, 
+            created_by: currentUser.id,
+            max_uses: 1, // Restrict token reuse threshold limits
+            uses: 0,
+            active: true
+          }]);
 
         if (error) {
-          alert('Failed to insert code: ' + error.message);
+          alert('Failed to insert registry token: ' + error.message);
         } else {
-          alert(`Code Generated! Hand this token to your editor: ${customCode}`);
+          alert(`Success! Hand over this invite bypass token to your staff member:\n\n${customCode}`);
+          document.getElementById('codeGeneratorForm').reset();
           renderInvitationCodes();
         }
       });
     }
 
+    // --- Invitation Codes Table Rendering Pipeline ---
+    async function renderInvitationCodes() {
+      const tbody = document.getElementById('codesTableBody');
+      tbody.innerHTML = '<tr><td colspan="3" class="text-muted small text-center">Loading registry queue...</td></tr>';
+      
+      const { data, error } = await supabase
+        .from('invitation_codes')
+        .select('*')
+        .eq('active', true);
+
+      // Clean out tokens that have exceeded or hit threshold metrics
+      const activeUnusedCodes = data ? data.filter(item => item.uses < item.max_uses) : [];
+
+      tbody.innerHTML = '';
+      if (error || activeUnusedCodes.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-muted small text-center">No active validation codes found.</td></tr>';
+        return;
+      }
+
+      activeUnusedCodes.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><code class="text-danger fw-bold">${item.code}</code></td>
+          <td><span class="badge bg-dark text-uppercase">${item.role}</span></td>
+          <td>
+            <button class="btn btn-sm btn-outline-secondary py-1" onclick="navigator.clipboard.writeText('${item.code}'); alert('Token string copied to clipboard!');">
+              <i class="bi bi-copy"></i> Copy
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // --- Article Card Grid Display Pipeline ---
     function renderArticlesList(articles, containerId) {
       const container = document.getElementById(containerId);
       container.innerHTML = '';
-      if (articles.length === 0) { container.innerHTML = '<div class="text-muted p-3">No articles.</div>'; return; }
+      if (articles.length === 0) { container.innerHTML = '<div class="text-muted p-3">No articles recorded.</div>'; return; }
+      
       articles.forEach(art => {
         const div = document.createElement('div');
         div.className = 'col-md-6 col-xl-4';
@@ -394,8 +423,8 @@
           <div class="card h-100 border-0 shadow-sm">
             <div class="card-body p-4 d-flex flex-column justify-content-between">
               <div>
-                <span class="badge ${art.status === 'published' ? 'bg-success' : 'bg-secondary'} mb-2">${art.status}</span>
-                <h5 class="fw-bold text-dark lh-sm">${art.title}</h5>
+                <span class="badge ${art.status === 'published' ? 'bg-success' : 'bg-secondary'} mb-2 text-uppercase">${art.status}</span>
+                <h5 class="fw-bold text-dark lh-sm mb-0">${art.title}</h5>
               </div>
               <button class="btn btn-sm btn-dark w-100 mt-3" onclick="editArticleModal('${art.id}')">Audit & SEO Edit</button>
             </div>
@@ -404,39 +433,7 @@
       });
     }
 
-    async function renderCommentsQueue() {
-      const tbody = document.getElementById('commentsTableBody');
-      tbody.innerHTML = '';
-
-      const { data, error } = await supabase
-        .from('comments')
-        .select('id, comment, user_email, created_at, articles(title)')
-        .order('created_at', { ascending: false });
-
-      if (error || !data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-muted text-center p-3">No active comments records found.</td></tr>';
-        return;
-      }
-
-      data.forEach(c => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="small fw-bold">${c.articles?.title || 'Unknown Asset'}</td>
-          <td class="small">${c.user_email || 'Anonymous'}</td>
-          <td><p class="small mb-0 text-secondary">${c.comment}</p></td>
-          <td><button class="btn btn-sm btn-outline-danger" onclick="deleteCommentRecord('${c.id}')"><i class="bi bi-trash"></i></button></td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    window.deleteCommentRecord = async function(id) {
-      if (confirm('Delete comment permanently?')) {
-        await supabase.from('comments').delete().eq('id', id);
-        renderCommentsQueue();
-      }
-    };
-
+    // --- Core Article Audit Modal Configuration ---
     window.editArticleModal = async function(id) {
       editingArticleId = id;
       const { data } = await supabase.from('articles').select('*').eq('id', id).single();
@@ -444,7 +441,6 @@
         document.getElementById('editTitle').value = data.title;
         document.getElementById('editBody').value = data.content;
         document.getElementById('editSeoTitle').value = data.seo_title || '';
-        // FIX 1 (JS side): now matches the corrected HTML id="editSeoDesc"
         document.getElementById('editSeoDesc').value = data.seo_description || '';
         document.getElementById('editStatus').value = data.status;
         articleModal.show();
@@ -456,23 +452,59 @@
         title: document.getElementById('editTitle').value,
         content: document.getElementById('editBody').value,
         seo_title: document.getElementById('editSeoTitle').value,
-        // FIX 1 (JS side): now matches the corrected HTML id="editSeoDesc"
         seo_description: document.getElementById('editSeoDesc').value,
         status: document.getElementById('editStatus').value
       };
       await updateArticle(editingArticleId, payload);
       articleModal.hide();
       switchSection('articles');
+      await loadDashboardStats();
     }
 
     async function handleArticleDelete() {
-      if (confirm('Delete permanently?')) {
+      if (confirm('Are you absolutely sure you want to permanently purge this asset? This action cannot be undone.')) {
         await deleteArticle(editingArticleId);
         articleModal.hide();
         switchSection('articles');
+        await loadDashboardStats();
       }
     }
 
+    // --- Public Comment Feed Moderation Desk ---
+    async function renderCommentsQueue() {
+      const tbody = document.getElementById('commentsTableBody');
+      tbody.innerHTML = '';
+      
+      const { data, error } = await supabase
+        .from('comments')
+        .select('id, comment, user_email, created_at, articles(title)')
+        .order('created_at', { ascending: false });
+
+      if (error || !data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-muted text-center p-3">No active reader comments records found.</td></tr>';
+        return;
+      }
+
+      data.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="small fw-bold text-dark">${c.articles?.title || 'Unknown Asset Context'}</td>
+          <td class="small">${c.user_email || 'Anonymous Reader'}</td>
+          <td><p class="small mb-0 text-secondary" style="max-width: 350px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${c.comment}</p></td>
+          <td><button class="btn btn-sm btn-outline-danger py-1" onclick="deleteCommentRecord('${c.id}')"><i class="bi bi-trash"></i></button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.deleteCommentRecord = async function(id) {
+      if (confirm('Permanently wipe this reader comment copy off the platform public grid?')) {
+        await supabase.from('comments').delete().eq('id', id);
+        renderCommentsQueue();
+      }
+    };
+
+    // Start Security Orchestration Protocol
     ensureAuth();
   </script>
 </body>
