@@ -23,7 +23,7 @@
     .section-view { display: none; }
     .section-view.active { display: block; animation: fadeIn 0.3s ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .premium-badge { background: linear-gradient(135s, var(--ez-dark), #2d3238); border-left: 3px solid var(--ez-gold); color: #fff; padding: 1.5rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; }
+    .premium-badge { background: linear-gradient(135deg, var(--ez-dark), #2d3238); border-left: 3px solid var(--ez-gold); color: #fff; padding: 1.5rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; }
     .gold-accent { color: var(--ez-gold); font-weight: 700; }
     @media (max-width: 767.98px) {
       .sidebar-panel { position: fixed; top: 70px; left: -100%; width: 260px; z-index: 1030; height: 100vh; transition: 0.3s; box-shadow: 4px 0 15px rgba(0,0,0,0.1); }
@@ -150,44 +150,48 @@
           </div>
         </div>
 
-    <!-- NEW STAFF SECTION-->
-<div id="staff" class="section-view">
-  <div class="row g-4">
-    <!-- Generator Form -->
-    <div class="col-md-5">
-      <div class="card border-0 shadow-sm p-4 rounded-4">
-        <h4 class="fw-bold mb-2 text-dark"><i class="bi bi-ticket-perforated-fill text-danger"></i> Mint Staff Invite Code</h4>
-        <p class="text-muted small">Generate a token to hand over to your new staff member for their registration bypass.</p>
-        <form id="codeGeneratorForm">
-          <div class="mb-3">
-            <label class="form-label small fw-bold">Intended Staff Role</label>
-            <select id="inviteRole" class="form-select" required>
-              <option value="admin">Admin (Co-Manager access)</option>
-              <option value="editor">Editor (Direct Live Publish Control)</option>
-              <option value="author">Author (Standard Draft Writer)</option>
-            </select>
+        <!-- NEW STAFF SECTION-->
+        <div id="staff" class="section-view">
+          <div class="row g-4">
+            <!-- Generator Form -->
+            <div class="col-md-5">
+              <div class="card border-0 shadow-sm p-4 rounded-4">
+                <h4 class="fw-bold mb-2 text-dark"><i class="bi bi-ticket-perforated-fill text-danger"></i> Mint Staff Invite Code</h4>
+                <p class="text-muted small">Generate a token to hand over to your new staff member for their registration bypass.</p>
+                <form id="codeGeneratorForm">
+                  <div class="mb-3">
+                    <label class="form-label small fw-bold">Intended Staff Role</label>
+                    <select id="inviteRole" class="form-select" required>
+                      <option value="admin">Admin (Co-Manager access)</option>
+                      <option value="editor">Editor (Direct Live Publish Control)</option>
+                      <option value="author">Author (Standard Draft Writer)</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-danger w-100 fw-bold">Generate Code Asset</button>
+                </form>
+              </div>
+            </div>
+            
+            <!-- Active Codes List -->
+            <div class="col-md-7">
+              <div class="card border-0 shadow-sm p-4 rounded-4">
+                <h5 class="fw-bold mb-3">Unused Registry Codes</h5>
+                <div class="table-responsive">
+                  <table class="table align-middle">
+                    <thead><tr><th>Token Code</th><th>Assigned Role</th><th>Action</th></tr></thead>
+                    <tbody id="codesTableBody">
+                      <tr><td colspan="3" class="text-muted small text-center">No active codes generated.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           </div>
-          <button type="submit" class="btn btn-danger w-100 fw-bold">Generate Code Asset</button>
-        </form>
-      </div>
-    </div>
-    
-    <!-- Active Codes List -->
-    <div class="col-md-7">
-      <div class="card border-0 shadow-sm p-4 rounded-4">
-        <h5 class="fw-bold mb-3">Unused Registry Codes</h5>
-        <div class="table-responsive">
-          <table class="table align-middle">
-            <thead><tr><th>Token Code</th><th>Assigned Role</th><th>Action</th></tr></thead>
-            <tbody id="codesTableBody">
-              <tr><td colspan="3" class="text-muted small text-center">No active codes generated.</td></tr>
-            </tbody>
-          </table>
         </div>
-      </div>
+
+      </main>
     </div>
   </div>
-</div>
 
   <!-- EDIT MODAL WITH SEO FIELDS -->
   <div class="modal fade" id="articleModal" tabindex="-1" aria-hidden="true">
@@ -201,6 +205,7 @@
           <div class="mb-3"><label class="form-label fw-bold small">Modified Title</label><input type="text" id="editTitle" class="form-control"></div>
           <div class="mb-3"><label class="form-label fw-bold small">Content Copy</label><textarea id="editBody" class="form-control" rows="6"></textarea></div>
           <div class="row g-2 bg-light p-3 rounded mb-3 border">
+            <!-- FIX 1: Both IDs now consistently use editSeoTitle / editSeoDesc -->
             <div class="col-md-6"><label class="small fw-bold">SEO Title</label><input type="text" id="editSeoTitle" class="form-control form-control-sm"></div>
             <div class="col-md-6"><label class="small fw-bold">SEO Description</label><input type="text" id="editSeoDesc" class="form-control form-control-sm"></div>
           </div>
@@ -234,6 +239,50 @@
     const sideMenu = document.getElementById('sidebarMenu');
 
     document.getElementById('mobileMenuToggle').addEventListener('click', () => sideMenu.classList.toggle('show'));
+
+    // ─── FIX 2: switchSection declared at module top level so all callers can reach it ───
+    window.switchSection = async function(section) {
+      document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
+      document.getElementById(section).classList.add('active');
+      document.querySelectorAll('[data-section]').forEach(l => {
+        l.classList.remove('active');
+        if (l.dataset.section === section) l.classList.add('active');
+      });
+      if (section === 'articles') renderArticlesList(await getArticles(), 'articlesList');
+      if (section === 'comments') renderCommentsQueue();
+      // FIX 3: staff routing now correctly lives inside switchSection where `section` is defined
+      if (section === 'staff') renderInvitationCodes();
+    };
+
+    // ─── FIX 4: renderInvitationCodes declared at module top level ───
+    async function renderInvitationCodes() {
+      const tbody = document.getElementById('codesTableBody');
+      tbody.innerHTML = '';
+
+      const { data, error } = await supabase
+        .from('invitation_codes')
+        .select('*')
+        .eq('is_used', false);
+
+      if (error || !data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-muted small text-center">No unused validation codes active.</td></tr>';
+        return;
+      }
+
+      data.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><code class="text-danger fw-bold">${item.code}</code></td>
+          <td><span class="badge bg-dark">${item.role}</span></td>
+          <td>
+            <button class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText('${item.code}'); alert('Copied!');">
+              <i class="bi bi-copy"></i> Copy
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
 
     async function ensureAuth() {
       try {
@@ -298,6 +347,7 @@
       switchSection('dashboard');
     };
 
+    // ─── FIX 5: setupEventListeners is clean — no stray code or nested function declarations ───
     function setupEventListeners() {
       document.querySelectorAll('[data-section]').forEach(link => {
         link.addEventListener('click', (e) => {
@@ -306,80 +356,32 @@
           switchSection(link.dataset.section);
         });
       });
-      document.getElementById('logoutBtn').addEventListener('click', async () => { await signOut(); window.location.href = 'index.html'; });
+
+      document.getElementById('logoutBtn').addEventListener('click', async () => {
+        await signOut();
+        window.location.href = 'index.html';
+      });
+
       document.getElementById('saveArticleBtn').addEventListener('click', saveArticleChanges);
       document.getElementById('deleteArticleBtn').addEventListener('click', handleArticleDelete);
-      
-    
-      // Handle Onboarding Staff Invites
-document.getElementById('codeGeneratorForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const assignedRole = document.getElementById('inviteRole').value;
-  
-  // Generate a clean, random 8-character token string
-  const customCode = 'EZ-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + Math.floor(10 + Math.random() * 90);
 
-  // Insert into your pre-existing invitation table
-  const { error } = await supabase
-    .from('invitation_codes')
-    .insert([{ 
-      code: customCode, 
-      role: assignedRole, 
-      is_used: false 
-    }]);
+      document.getElementById('codeGeneratorForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const assignedRole = document.getElementById('inviteRole').value;
+        const customCode = 'EZ-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + Math.floor(10 + Math.random() * 90);
 
-  if (error) {
-    alert('Failed to insert code: ' + error.message);
-  } else {
-    alert(`Code Generated! Hand this token to your editor: ${customCode}`);
-    renderInvitationCodes();
-  }
-});
+        const { error } = await supabase
+          .from('invitation_codes')
+          .insert([{ code: customCode, role: assignedRole, is_used: false }]);
 
-// Update your existing switchSection function to fetch codes when opening staff panel
-async function renderInvitationCodes() {
-  const tbody = document.getElementById('codesTableBody');
-  tbody.innerHTML = '';
-  
-  const { data, error } = await supabase
-    .from('invitation_codes')
-    .select('*')
-    .eq('is_used', false);
-
-  if (error || !data || data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="3" class="text-muted small text-center">No unused validation codes active.</td></tr>';
-    return;
-  }
-
-  data.forEach(item => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><code class="text-danger fw-bold">${item.code}</code></td>
-      <td><span class="badge bg-dark">${item.role}</span></td>
-      <td>
-        <button class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText('${item.code}'); alert('Copied!');">
-          <i class="bi bi-copy"></i> Copy
-        </button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-// Modify your section router listener inside setupEventListeners:
-// components routing change inside switchSection handler:
-if (section === 'staff') renderInvitationCodes();
-
-    window.switchSection = async function(section) {
-      document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
-      document.getElementById(section).classList.add('active');
-      document.querySelectorAll('[data-section]').forEach(l => {
-        l.classList.remove('active');
-        if (l.dataset.section === section) l.classList.add('active');
+        if (error) {
+          alert('Failed to insert code: ' + error.message);
+        } else {
+          alert(`Code Generated! Hand this token to your editor: ${customCode}`);
+          renderInvitationCodes();
+        }
       });
-      if (section === 'articles') renderArticlesList(await getArticles(), 'articlesList');
-      if (section === 'comments') renderCommentsQueue();
-    };
+    }
 
     function renderArticlesList(articles, containerId) {
       const container = document.getElementById(containerId);
@@ -405,7 +407,7 @@ if (section === 'staff') renderInvitationCodes();
     async function renderCommentsQueue() {
       const tbody = document.getElementById('commentsTableBody');
       tbody.innerHTML = '';
-      
+
       const { data, error } = await supabase
         .from('comments')
         .select('id, comment, user_email, created_at, articles(title)')
@@ -442,7 +444,8 @@ if (section === 'staff') renderInvitationCodes();
         document.getElementById('editTitle').value = data.title;
         document.getElementById('editBody').value = data.content;
         document.getElementById('editSeoTitle').value = data.seo_title || '';
-        document.getElementById('editSeoDescription').value = data.seo_description || '';
+        // FIX 1 (JS side): now matches the corrected HTML id="editSeoDesc"
+        document.getElementById('editSeoDesc').value = data.seo_description || '';
         document.getElementById('editStatus').value = data.status;
         articleModal.show();
       }
@@ -453,7 +456,8 @@ if (section === 'staff') renderInvitationCodes();
         title: document.getElementById('editTitle').value,
         content: document.getElementById('editBody').value,
         seo_title: document.getElementById('editSeoTitle').value,
-        seo_description: document.getElementById('editSeoDescription').value,
+        // FIX 1 (JS side): now matches the corrected HTML id="editSeoDesc"
+        seo_description: document.getElementById('editSeoDesc').value,
         status: document.getElementById('editStatus').value
       };
       await updateArticle(editingArticleId, payload);
