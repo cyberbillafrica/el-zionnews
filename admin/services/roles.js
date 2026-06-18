@@ -1,36 +1,49 @@
 import { supabase } from './supabase.js';
 
 /**
- * Dynamically fetches the current user's role from their profile
+ * Gets the current user's role by checking both session metadata and the database profile
  */
-export async function getUserRole() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
+async function getUserRole() {
+  const { data: { session }, error } = await supabase.auth.getSession();
+  if (error || !session) return null;
 
-  const { data, error } = await supabase
-    .from('profiles')
+  const user = session.user;
+
+  // 1. First Check: Look inside the secure JWT App Metadata / User Metadata
+  // This is what we passed during signUp options: { data: { role: invite.role } }
+  if (user.user_metadata && user.user_metadata.role) {
+    return user.user_metadata.role;
+  }
+  if (user.app_metadata && user.app_metadata.role) {
+    return user.app_metadata.role;
+  }
+
+  // 2. Fallback Check: Query your database profiles table directly
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles') // <-- Change this if your table name is different (e.g., 'user_roles')
     .select('role')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
-  if (error) return null;
-  return data.role;
+  if (!profileError && profile) {
+    return profile.role;
+  }
+
+  return null;
 }
 
 /**
- * Checks if current user is an Admin or Super Admin
+ * Verifies if the user has Administrator access
  */
 export async function isAdmin() {
-  const { data, error } = await supabase.rpc('is_admin');
-  if (error) return false;
-  return data;
+  const role = await getUserRole();
+  return role === 'admin';
 }
 
 /**
- * Checks if current user is an Editor, Admin, or Super Admin
+ * Verifies if the user is an Editor or higher
  */
 export async function isEditor() {
-  const { data, error } = await supabase.rpc('is_editor');
-  if (error) return false;
-  return data;
+  const role = await getUserRole();
+  return role === 'editor' || role === 'admin' || role === 'author';
 }
