@@ -285,7 +285,7 @@
         <b>Highlights</b>
     </div>
     <!-- Scrolling News Text -->
-    <marquee style="flex: 1; margin-left: 10px;">
+    <marquee id="homepage-marquee-target" style="flex: 1; margin-left: 10px;">
         <h5>
             <a style="color: #FF0000;">
                 SPORTS: Ahmed Musa vows to restore Kano pillars’ glory.&#124;
@@ -312,7 +312,7 @@
     <div class="container-fluid">
     <div class="row">
         <div class="col-lg-7 px-0">
-            <div class="owl-carousel main-carousel position-relative">
+            <div id="homepage-main-slider" class="owl-carousel main-carousel position-relative">
                 <div class="position-relative overflow-hidden" style="height: 500px;">
                         <img class="img-fluid h-100" src="/sports/img/gib.jpg" style="object-fit: cover;">
                     <div class="overlay">
@@ -420,7 +420,7 @@
                 <div class="col-12">
                     <div class="d-flex justify-content-between">
                         <div class="bg-primary text-dark text-center font-weight-medium py-2" style="width: 170px;">Breaking News</div>
-                        <div class="owl-carousel tranding-carousel position-relative d-inline-flex align-items-center ml-3"
+                        <div id="homepage-trending-carousel" class="owl-carousel tranding-carousel position-relative d-inline-flex align-items-center ml-3"
                             style="width: calc(100% - 170px); padding-right: 90px;">
                             <div class="text-truncate">
                                 <a class="text-white text-uppercase font-weight-normal" href="">
@@ -472,7 +472,7 @@
         <div class="section-title">
             <h4 class="m-0 text-uppercase font-weight-bold">Featured News</h4>
         </div>
-        <div class="owl-carousel news-carousel carousel-item-4 position-relative">
+        <div id="homepage-featured-slider" class="owl-carousel news-carousel carousel-item-4 position-relative">
             <!-- Sports News -->
             <div class="position-relative overflow-hidden" style="height: 300px;">
                 <img class="img-fluid h-100" src="/img/edu_1.JPG" style="object-fit: cover;">
@@ -546,7 +546,7 @@
     <!-- News With Sidebar Start -->
     <div class="container-fluid">
         <div class="container">
-            <div class="row">
+            <div id="homepage-main-grid" class="row">
                 <div class="col-lg-8">
                     <div class="row">
                         <div class="col-12">
@@ -824,7 +824,7 @@ If you've been looking for a small PC that can do it all, then the Asus ROG NUC 
     <div class="section-title mb-0">
         <h4 class="m-0 text-uppercase font-weight-bold">Popular News</h4>
     </div>
-   <div class="bg-white border border-top-0 p-3">
+   <div id="homepage-popular-slider" class="bg-white border border-top-0 p-3">
         <div class="d-flex align-items-center bg-white mb-3" style="height: 110px;">
             <img class="img-fluid w-25 h-100" src="../img/northgov.jfif" alt="">
             <div class="w-100 h-100 px-3 d-flex flex-column justify-content-center border border-left-0">
@@ -1014,6 +1014,210 @@ If you've been looking for a small PC that can do it all, then the Asus ROG NUC 
 <!-- Template Javascript -->
 <script src="js/main.js"></script>
 
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-public.js"></script>
+    <script src="js/public-news.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Pull full coordinated layout data state
+            const data = await fetchHomepageLayoutData();
+
+            // Fire rendering pipelines sequentially
+            renderMarquee(data.breaking);
+            renderTrendingTicker(data.trendingTicker);
+            renderMainSlider(data.featuredMain);
+            renderFeaturedSlider(data.featuredSlider);
+            renderMainGrid(data.recentGrid);
+            renderPopularSlider(data.popular);
+        });
+
+        // 1. SCROLLING MARQUEE TICKER 
+        function renderMarquee(items) {
+            const el = document.getElementById('homepage-marquee-target');
+            if (!el || items.length === 0) return;
+            el.innerHTML = items.map(art => `
+                <a class="text-white font-weight-semi-bold mx-3" href="a_sample.html?slug=${art.slug}">${escapeHTML(art.title)}</a>
+            `).join(' | ');
+        }
+
+        // 2. TRENDING TICKER CAROUSEL (Top small black bar slot)
+        function renderTrendingTicker(items) {
+            const container = document.getElementById('homepage-trending-carousel');
+            if (!container || items.length === 0) return;
+
+            if ($(container).hasClass('owl-loaded')) {
+                $(container).owlCarousel('destroy');
+            }
+
+            container.innerHTML = items.map(art => `
+                <div class="text-truncate">
+                    <a class="text-white font-weight-semi-bold" href="a_sample.html?slug=${art.slug}">${escapeHTML(art.title)}</a>
+                </div>
+            `).join('');
+
+            $(container).owlCarousel({
+                autoplay: true,
+                smartSpeed: 500,
+                items: 1,
+                loop: true,
+                dots: false,
+                nav: false
+            });
+        }
+
+        // 3. MAIN NEWS HERO SLIDER (Top big carousel wrapper)
+        function renderMainSlider(items) {
+            const container = document.getElementById('homepage-main-slider');
+            if (!container || items.length === 0) return;
+
+            if ($(container).hasClass('owl-loaded')) {
+                $(container).owlCarousel('destroy');
+            }
+
+            container.innerHTML = items.map(art => `
+                <div class="position-relative overflow-hidden" style="height: 500px;">
+                    <img class="img-fluid h-100 w-100" src="${art.featured_image || 'img/placeholder.jpg'}" style="object-fit: cover;">
+                    <div class="overlay">
+                        <div class="mb-2">
+                            <a class="badge badge-primary text-uppercase font-weight-semi-bold p-2 mr-2" href="#">${escapeHTML(art.category_id || 'News')}</a>
+                            <span class="text-white"><small>${new Date(art.published_at).toLocaleDateString()}</small></span>
+                        </div>
+                        <h1 class="h1 mb-3 font-weight-bold">
+                            <a class="text-white" href="a_sample.html?slug=${art.slug}">${escapeHTML(art.title)}</a>
+                        </h1>
+                        <p class="text-white">${escapeHTML(art.excerpt || '')}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            $(container).owlCarousel({
+                autoplay: true,
+                smartSpeed: 1500,
+                items: 1,
+                dots: true,
+                loop: true,
+                nav: true,
+                navText: [
+                    '<button class="owl-prev"><i class="fa fa-angle-left"></i></button>',
+                    '<button class="owl-next"><i class="fa fa-angle-right"></i></button>'
+                ]
+            });
+        }
+
+        // 4. FEATURED NEWS SLIDER (The distinct middle multi-item row)
+        function renderFeaturedSlider(items) {
+            const container = document.getElementById('homepage-featured-slider');
+            if (!container || items.length === 0) return;
+
+            if ($(container).hasClass('owl-loaded')) {
+                $(container).owlCarousel('destroy');
+            }
+
+            // Using layout styling classes for standard multi-item display cards
+            container.innerHTML = items.map(art => `
+                <div class="position-relative overflow-hidden" style="height: 300px;">
+                    <img class="img-fluid w-100 h-100" src="${art.featured_image || 'img/placeholder.jpg'}" style="object-fit: cover;">
+                    <div class="overlay">
+                        <div class="mb-2">
+                            <a class="badge badge-primary text-uppercase font-weight-semi-bold p-2 mr-2" href="#">${escapeHTML(art.category_id)}</a>
+                            <span class="text-white"><small>${new Date(art.published_at).toLocaleDateString()}</small></span>
+                        </div>
+                        <a class="h4 m-0 text-white font-weight-bold" href="a_sample.html?slug=${art.slug}">${escapeHTML(art.title)}</a>
+                    </div>
+                </div>
+            `).join('');
+
+            // Multi-item configuration to display a grid sequence across monitors
+            $(container).owlCarousel({
+                autoplay: true,
+                smartSpeed: 1000,
+                margin: 30,
+                dots: false,
+                loop: true,
+                nav: true,
+                navText: [
+                    '<button class="owl-prev"><i class="fa fa-angle-left"></i></button>',
+                    '<button class="owl-next"><i class="fa fa-angle-right"></i></button>'
+                ],
+                responsive: {
+                    0: { items: 1 },
+                    576: { items: 2 },
+                    768: { items: 3 }
+                }
+            });
+        }
+
+        // 5. MAIN NEWS GRID WITH SIDEBAR 
+        function renderMainGrid(articles) {
+            const container = document.getElementById('homepage-main-grid');
+            if (!container) return;
+
+            if (articles.length === 0) {
+                container.innerHTML = `<p class="text-muted p-3">No live content posted yet.</p>`;
+                return;
+            }
+
+            container.innerHTML = articles.map(art => `
+                <div class="col-lg-6 mb-4">
+                    <div class="position-relative mb-3">
+                        <img class="img-fluid w-100" src="${art.featured_image || 'img/placeholder.jpg'}" style="object-fit: cover; height: 220px;">
+                        <div class="bg-white border border-top-0 p-4">
+                            <div class="mb-2">
+                                <a class="badge badge-primary text-uppercase font-weight-semi-bold p-2 mr-2" href="#">${escapeHTML(art.category_id)}</a>
+                                <span class="text-body"><small>${new Date(art.published_at).toLocaleDateString()}</small></span>
+                            </div>
+                            <h4 class="h4 mb-3 font-weight-bold">
+                                <a class="text-dark" href="a_sample.html?slug=${art.slug}">${escapeHTML(art.title)}</a>
+                            </h4>
+                            <p class="m-0">${escapeHTML(art.excerpt || '')}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 6. POPULAR NEWS LAYOUT CAROUSEL SECTION
+        function renderPopularSlider(items) {
+            const container = document.getElementById('homepage-popular-slider');
+            if (!container || items.length === 0) return;
+
+            if ($(container).hasClass('owl-loaded')) {
+                $(container).owlCarousel('destroy');
+            }
+
+            container.innerHTML = items.map(art => `
+                <div class="position-relative overflow-hidden" style="height: 150px;">
+                    <img class="img-fluid w-100 h-100" src="${art.featured_image || 'img/placeholder.jpg'}" style="object-fit: cover;">
+                    <div class="overlay">
+                        <div class="mb-1">
+                            <span class="text-white"><small>${new Date(art.published_at).toLocaleDateString()}</small></span>
+                        </div>
+                        <a class="h6 m-0 text-white text-uppercase font-weight-bold" href="a_sample.html?slug=${art.slug}">${escapeHTML(art.title)}</a>
+                    </div>
+                </div>
+            `).join('');
+
+            $(container).owlCarousel({
+                autoplay: true,
+                smartSpeed: 1000,
+                items: 1,
+                dots: false,
+                loop: true
+            });
+        }
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+    </script>	
+	
+	
+<!-- Cookies Script -->	
 <div id="cookie-banner" style="
   position: fixed; 
   bottom: 10%; /* Leaves space from the bottom but before the center */
