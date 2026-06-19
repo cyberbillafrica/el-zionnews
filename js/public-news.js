@@ -43,18 +43,22 @@ async function fetchHomepageLayoutData() {
 }
 
 // 3. Fetch Category Specific Feeds
-async function fetchCategoryLayoutData(categoryName) {
+async function fetchCategoryLayoutData(categorySlugOrName) {
     try {
-        // Run parallel queries to fetch targeted slices of news for this category
+        // First, let's grab the true category UUID using its name or slug from your categories table
+        const { data: catData } = await supabase
+            .from('categories')
+            .select('id')
+            .ilike('name', categorySlugOrName)
+            .single();
+            
+        const catId = catData ? catData.id : categorySlugOrName;
+
         const [allArticles, breaking, featured, trending] = await Promise.all([
-            // Main news bucket for the grid
-            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').ilike('category_id', categoryName).order('published_at', { ascending: false }).limit(10),
-            // Breaking news ticker items
-            supabase.from('articles').select('id, title, slug').eq('status', 'published').eq('breaking_news', true).ilike('category_id', categoryName).order('published_at', { ascending: false }).limit(5),
-            // High profile featured slots for the sliders
-            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').eq('featured', true).ilike('category_id', categoryName).order('published_at', { ascending: false }).limit(4),
-            // Trending list layout
-            supabase.from('articles').select('id, title, slug, published_at, featured_image').eq('status', 'published').ilike('category_id', categoryName).order('published_at', { ascending: false }).limit(5) // Adjust sorting if you have a view counter
+            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').eq('category_id', catId).order('published_at', { ascending: false }).limit(10),
+            supabase.from('articles').select('id, title, slug').eq('status', 'published').eq('breaking_news', true).eq('category_id', catId).order('published_at', { ascending: false }).limit(5),
+            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').eq('featured', true).eq('category_id', catId).order('published_at', { ascending: false }).limit(4),
+            supabase.from('articles').select('id, title, slug, published_at, featured_image').eq('status', 'published').eq('category_id', catId).order('published_at', { ascending: false }).limit(5)
         ]);
 
         return {
@@ -64,17 +68,19 @@ async function fetchCategoryLayoutData(categoryName) {
             trending: trending.data || []
         };
     } catch (err) {
-        console.error(`Error aggregating data for category ${categoryName}:`, err);
+        console.error("Error loading category data layout:", err);
         return { articles: [], breaking: [], featured: [], trending: [] };
     }
 }
 
 // 4. Fetch Single Article Data + Associated Comments
 async function fetchSingleArticleDetails() {
-    const slug = getQueryParam('slug');
+    const urlParams = new URLSearchParams(window.location.search);
+    const slug = urlParams.get('slug');
     if (!slug) return null;
 
     try {
+        // Fetch article matching your table layout
         const { data: article, error: artErr } = await supabase
             .from('articles')
             .select('*, profiles(full_name)')
@@ -84,15 +90,40 @@ async function fetchSingleArticleDetails() {
 
         if (artErr) throw artErr;
 
+        // Fetch comments matching your EXACT schema columns: id, article_id, name, email, comment, approved, created_at
+        // Filter strictly by approved = true so hidden/spam comments don't render publicly
         const { data: comments, error: commErr } = await supabase
             .from('comments')
-            .select('*')
+            .select('id, name, email, comment, created_at')
             .eq('article_id', article.id)
+            .eq('approved', true) 
             .order('created_at', { ascending: true });
 
         return { article, comments: comments || [] };
     } catch (err) {
-        console.error("Error loading article:", err);
+        console.error("Error loading article or comments payload:", err);
         return null;
+    }
+}
+
+// Updated Comment Insertion Form Pipeline Engine
+async function submitComment(articleId, userName, userEmail, commentBody) {
+    try {
+        // Maps exactly to columns: article_id, name, email, comment
+        const { data, error } = await supabase
+            .from('comments')
+            .insert([
+                { 
+                    article_id: articleId, 
+                    name: userName, 
+                    email: userEmail, 
+                    comment: commentBody 
+                }
+            ]);
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
+        console.error("Database comment insertion error:", error.message);
+        return { success: false, error: error.message };
     }
 }
