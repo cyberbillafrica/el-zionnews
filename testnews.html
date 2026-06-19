@@ -689,11 +689,12 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-        const data = await fetchSingleArticleDetails();
+		
+document.addEventListener("DOMContentLoaded", async () => {
+   const data = await fetchSingleArticleDetails();
         
-        if (!data || !data.article) {
-            showArticleError();
+    if (!data || !data.article) {
+     showArticleError();
             return;
         }
         
@@ -716,46 +717,67 @@
     }
 
     function renderArticleContent(article) {
-        document.title = `${article.seo_title || article.title} | El Zion News`;
-        
-        const metaDesc = document.querySelector('meta[name="description"]');
-        if (metaDesc) {
-            metaDesc.setAttribute('content', article.seo_description || article.excerpt || '');
-        }
-
-        const titleEl = document.getElementById('article-title');
-        const bodyEl = document.getElementById('article-body-content');
-        const categoryEl = document.getElementById('article-category');
-        const dateEl = document.getElementById('article-date');
-        const authorEl = document.getElementById('article-author');
-        const imageEl = document.getElementById('article-featured-image');
-        const viewsEl = document.getElementById('article-views');
-
-        if (titleEl) titleEl.innerText = article.title;
-        if (categoryEl) categoryEl.innerText = article.category_id ? "News Updates" : "News";
-        if (viewsEl) viewsEl.innerText = (article.views || 0).toLocaleString();
-        
-        if (authorEl) {
-            authorEl.innerText = `By ${article.profiles?.full_name || 'Staff Writer'}`;
-        }
-
-        if (dateEl && article.published_at) {
-            dateEl.innerText = new Date(article.published_at).toLocaleDateString(undefined, {
-                year: 'numeric', month: 'long', day: 'numeric'
-            });
-        }
-
-        if (imageEl && article.featured_image) {
-            imageEl.src = article.featured_image;
-            imageEl.alt = article.title;
-        }
-
-        // Parse markdown structural syntax into formatted paragraphs, figures, and blockquotes cleanly
-        if (bodyEl && article.content) {
-            bodyEl.innerHTML = marked.parse(article.content);
-        }
+    // 1. Core Browser Title and Standard SEO Description
+    document.title = `${article.seo_title || article.title} | El Zion News`;
+    
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+        metaDesc.setAttribute('content', article.seo_description || article.excerpt || '');
     }
 
+    // 2. Open Graph (Facebook / WhatsApp / LinkedIn) Meta Tags
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    const ogImage = document.querySelector('meta[property="og:image"]');
+    const ogUrl = document.querySelector('meta[property="og:url"]');
+
+    if (ogTitle) ogTitle.setAttribute('content', article.seo_title || article.title);
+    if (ogDesc) ogDesc.setAttribute('content', article.seo_description || article.excerpt || '');
+    if (ogImage && article.featured_image) ogImage.setAttribute('content', article.featured_image);
+    if (ogUrl) ogUrl.setAttribute('content', window.location.href);
+
+    // 3. Twitter Card Meta Tags
+    const twitterTitle = document.querySelector('meta[name="twitter:title"]');
+    const twitterDesc = document.querySelector('meta[name="twitter:description"]');
+    const twitterImage = document.querySelector('meta[name="twitter:image"]');
+
+    if (twitterTitle) twitterTitle.setAttribute('content', article.seo_title || article.title);
+    if (twitterDesc) twitterDesc.setAttribute('content', article.seo_description || article.excerpt || '');
+    if (twitterImage && article.featured_image) twitterImage.setAttribute('content', article.featured_image);
+
+    // 4. Update the Visible Layout Elements
+    const titleEl = document.getElementById('article-title');
+    const bodyEl = document.getElementById('article-body-content');
+    const categoryEl = document.getElementById('article-category');
+    const dateEl = document.getElementById('article-date');
+    const authorEl = document.getElementById('article-author');
+    const imageEl = document.getElementById('article-featured-image');
+    const viewsEl = document.getElementById('article-views');
+
+    if (titleEl) titleEl.innerText = article.title;
+    if (categoryEl) categoryEl.innerText = article.category_id ? "News Updates" : "News";
+    if (viewsEl) viewsEl.innerText = (article.views || 0).toLocaleString();
+    
+    if (authorEl) {
+        authorEl.innerText = `By ${article.profiles?.full_name || 'Staff Writer'}`;
+    }
+
+    if (dateEl && article.published_at) {
+        dateEl.innerText = new Date(article.published_at).toLocaleDateString(undefined, {
+            year: 'numeric', month: 'long', day: 'numeric'
+        });
+    }
+
+    if (imageEl && article.featured_image) {
+        imageEl.src = article.featured_image;
+        imageEl.alt = article.title;
+    }
+
+    // Parse markdown content into structural template HTML elements
+    if (bodyEl && article.content) {
+        bodyEl.innerHTML = marked.parse(article.content);
+    }
+}
     async function loadRelatedContent(categoryId, currentArticleId) {
         try {
             // Pull 7 similar entries from same category
