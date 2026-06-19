@@ -675,6 +675,157 @@
 
     <!-- Template Javascript -->
     <script src="../js/main.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script src="../js/supabase-public.js"></script>
+    
+    <script src="../js/public-news.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const data = await fetchSingleArticleDetails();
+            
+            if (!data || !data.article) {
+                showArticleError();
+                return;
+            }
+            
+            const { article, comments } = data;
+            
+            renderArticleContent(article);
+            renderCommentsList(comments);
+            setupCommentForm(article.id);
+        });
+
+        function showArticleError() {
+            const titleEl = document.querySelector('.single-post-title') || document.querySelector('h1');
+            const bodyEl = document.querySelector('.post-content-body') || document.querySelector('.entry-content');
+            
+            if (titleEl) titleEl.innerText = "Article Not Found";
+            if (bodyEl) bodyEl.innerHTML = `<p class="alert alert-warning">The story you are looking for may have been moved or unpublished.</p>`;
+        }
+
+        function renderArticleContent(article) {
+            document.title = `${article.seo_title || article.title} | El Zion News`;
+            
+            const metaDesc = document.querySelector('meta[name="description"]');
+            if (metaDesc) {
+                metaDesc.setAttribute('content', article.seo_description || article.excerpt || '');
+            }
+
+            const titleElement = document.querySelector('.single-post-title') || document.querySelector('h1');
+            const bodyElement = document.querySelector('.post-content-body') || document.querySelector('.entry-content');
+            const authorElement = document.querySelector('.author-name-target') || document.querySelector('.author-name');
+            const dateElement = document.querySelector('.post-date-target') || document.querySelector('.post-date');
+            const imageElement = document.querySelector('.featured-image-target') || document.querySelector('.post-featured-image img');
+
+            if (titleElement) titleElement.innerText = article.title;
+            if (bodyElement) bodyElement.innerHTML = article.content; 
+            if (authorElement) authorElement.innerText = `By ${article.profiles?.full_name || 'Staff Writer'}`;
+            
+            if (dateElement && article.published_at) {
+                dateElement.innerText = new Date(article.published_at).toLocaleDateString(undefined, {
+                    year: 'numeric', month: 'long', day: 'numeric'
+                });
+            }
+            
+            if (imageElement && article.featured_image) {
+                imageElement.src = article.featured_image;
+                imageElement.alt = article.title;
+            }
+        }
+
+        function renderCommentsList(comments) {
+            const commentsContainer = document.getElementById('comments-list-target') || document.querySelector('.comments-area');
+            if (!commentsContainer) return;
+
+            if (comments.length === 0) {
+                commentsContainer.innerHTML = `<p class="text-muted no-comments-msg">No comments yet. Be the first to join the conversation!</p>`;
+                return;
+            }
+
+            commentsContainer.innerHTML = comments.map(comment => `
+                <div class="comment-card mb-3 p-3 shadow-sm" style="background: #f9f9f9; border-left: 4px solid #0056b3; border-radius: 4px;">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <strong class="comment-author text-dark" style="font-size: 0.95rem;">${escapeHTML(comment.user_email)}</strong>
+                        <small class="comment-date text-muted" style="font-size: 0.8rem;">${new Date(comment.created_at).toLocaleDateString()}</small>
+                    </div>
+                    <p class="comment-text mb-0 text-secondary" style="font-size: 0.9rem; line-height: 1.4;">${escapeHTML(comment.comment_text)}</p>
+                </div>
+            `).join('');
+        }
+
+        function setupCommentForm(articleId) {
+            const commentForm = document.getElementById('comment-form') || document.querySelector('form.comment-form');
+            if (!commentForm) return;
+
+            commentForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const emailInput = commentForm.querySelector('input[type="email"]') || document.getElementById('comment-email');
+                const textInput = commentForm.querySelector('textarea') || document.getElementById('comment-text');
+                const submitBtn = commentForm.querySelector('button[type="submit"]') || commentForm.querySelector('.btn');
+
+                if (!emailInput || !textInput) return;
+
+                const email = emailInput.value.trim();
+                const text = textInput.value.trim();
+
+                if (!email || !text) {
+                    alert("Please fill in all comment form fields.");
+                    return;
+                }
+
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerText = "Posting...";
+                }
+
+                const result = await submitComment(articleId, email, text);
+
+                if (result.success) {
+                    const commentsContainer = document.getElementById('comments-list-target') || document.querySelector('.comments-area');
+                    const noMsg = commentsContainer?.querySelector('.no-comments-msg');
+                    if (noMsg) noMsg.remove();
+
+                    const newCommentHTML = `
+                        <div class="comment-card mb-3 p-3 shadow-sm" style="background: #fffdf5; border-left: 4px solid #28a745; border-radius: 4px;">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <strong class="comment-author text-dark" style="font-size: 0.95rem;">${escapeHTML(email)}</strong>
+                                <small class="comment-date text-muted" style="font-size: 0.8rem;">Just now</small>
+                            </div>
+                            <p class="comment-text mb-0 text-secondary" style="font-size: 0.9rem;">${escapeHTML(text)}</p>
+                        </div>
+                    `;
+                    
+                    if (commentsContainer) {
+                        if (commentsContainer.innerHTML.includes('no-comments-msg')) {
+                             commentsContainer.innerHTML = newCommentHTML;
+                        } else {
+                             commentsContainer.insertAdjacentHTML('beforeend', newCommentHTML);
+                        }
+                    }
+                    textInput.value = '';
+                } else {
+                    alert(`Could not process comment entry: ${result.error}`);
+                }
+
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "Post Comment";
+                }
+            });
+        }
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+    </script>
+	
 </body>
 
   </html>
