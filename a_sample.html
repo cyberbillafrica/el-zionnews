@@ -352,11 +352,11 @@
 </div>
 <!-- News Detail End -->
 
-
-
-  <hr>
-	<h6 class="mt-4 mb-3 text-dark text-uppercase font-weight-bold">Share News</h6>
-<div class="d-flex justify-content-start">
+<hr>
+	
+<!-- News Share Start -->
+  <h6 class="mt-4 mb-3 text-dark text-uppercase font-weight-bold">Share News</h6>
+   <div class="d-flex justify-content-start">
     <a class="btn btn-lg btn-danger btn-lg-square mr-2" id="twitter-share" target="_blank">
         <i class="fab fa-twitter"></i>
     </a>
@@ -377,25 +377,61 @@
     document.getElementById("facebook-share").href = `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`;
     document.getElementById("whatsapp-share").href = `https://api.whatsapp.com/send?text=Check%20this%20out:%20${pageUrl}`;
 </script>
+    <!-- News Share End -->
+            <hr>
     
-            
-            <!-- Comment List Start -->
-          <hr>
-	<div class="container">
-            <div class="section-title">
-            <h4 class="m-0 text-uppercase font-weight-bold">Comments</h4>
-            </div>
-	   </div> 
-            <div class="fb-comments" data-href="" data-width="" data-numposts="3"></div>
-            <script>
-            // Set the href attribute dynamically
-            document.querySelector('.fb-comments').setAttribute('data-href', window.location.href);
-            </script>
-            
-            <!-- Comment List End -->
-            
-            </div>
-            </div>
+	
+	<!-- Comment List Start -->
+    <div class="container">
+    <div class="section-title">
+        <h4 class="m-0 text-uppercase font-weight-bold">
+            Comments
+        </h4>
+    </div>
+</div>
+
+
+<div id="comments-list-target" class="comments-area mb-4">
+    <p class="text-muted no-comments-msg">
+        No comments yet. Be the first to join the conversation!
+    </p>
+</div>
+
+
+<form id="comment-form" class="comment-form">
+
+    <div class="mb-3">
+        <input 
+            type="email"
+            id="comment-email"
+            class="form-control"
+            placeholder="Your email"
+            required>
+    </div>
+
+
+    <div class="mb-3">
+        <textarea
+            id="comment-text"
+            class="form-control"
+            rows="4"
+            placeholder="Write your comment..."
+            required></textarea>
+    </div>
+
+
+    <button 
+        type="submit"
+        class="btn btn-primary">
+        Post Comment
+    </button>
+
+</form>
+
+
+<!-- Comment List End -->  
+ </div>
+ </div>
     
                    
                   
