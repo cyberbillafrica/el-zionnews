@@ -1,5 +1,3 @@
-// js/public-news.js
-
 // 1. Base URL Parser Helper
 function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
@@ -27,20 +25,29 @@ async function fetchHomepageFeeds() {
 }
 
 // 3. Fetch Category Specific Feeds
-async function fetchCategoryFeed(categoryName) {
+async function fetchCategoryLayoutData(categoryName) {
     try {
-        const { data, error } = await supabase
-            .from('articles')
-            .select('*, profiles(full_name)')
-            .eq('status', 'published')
-            .ilike('category_id', categoryName) // matches 'sports', 'crypto', etc.
-            .order('published_at', { ascending: false });
-        
-        if (error) throw error;
-        return data;
+        // Run parallel queries to fetch targeted slices of news for this category
+        const [allArticles, breaking, featured, trending] = await Promise.all([
+            // Main news bucket for the grid
+            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').ilike('category_id', categoryName).order('published_at', { ascending: false }).limit(10),
+            // Breaking news ticker items
+            supabase.from('articles').select('id, title, slug').eq('status', 'published').eq('breaking_news', true).ilike('category_id', categoryName).order('published_at', { ascending: false }).limit(5),
+            // High profile featured slots for the sliders
+            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').eq('featured', true).ilike('category_id', categoryName).order('published_at', { ascending: false }).limit(4),
+            // Trending list layout
+            supabase.from('articles').select('id, title, slug, published_at, featured_image').eq('status', 'published').ilike('category_id', categoryName).order('published_at', { ascending: false }).limit(5) // Adjust sorting if you have a view counter
+        ]);
+
+        return {
+            articles: allArticles.data || [],
+            breaking: breaking.data || [],
+            featured: featured.data || [],
+            trending: trending.data || []
+        };
     } catch (err) {
-        console.error(`Error loading category ${categoryName}:`, err);
-        return [];
+        console.error(`Error aggregating data for category ${categoryName}:`, err);
+        return { articles: [], breaking: [], featured: [], trending: [] };
     }
 }
 
