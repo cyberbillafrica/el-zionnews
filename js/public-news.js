@@ -8,29 +8,37 @@ function getQueryParam(param) {
 
 async function fetchHomepageLayoutData() {
     try {
-        const [breaking, featured, recent, popular, trendingTicker] = await Promise.all([
-            // 1. Breaking News (for main grid or sections if needed)
-            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').eq('breaking_news', true).order('published_at', { ascending: false }).limit(4),
-            // 2. Main News Slider (Featured items across all sections)
+        const [breaking, featuredMain, recentGrid, popular, trendingTicker, featuredSlider] = await Promise.all([
+            // 1. Scrolling Breaking News (Static array text items for Marquee)
+            supabase.from('articles').select('id, title, slug').eq('status', 'published').eq('breaking_news', true).order('published_at', { ascending: false }).limit(6),
+            
+            // 2. Main News Hero Slider (Top big banner articles)
             supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').eq('featured', true).order('published_at', { ascending: false }).limit(4),
-            // 3. Main Recent News Grid
+            
+            // 3. Trending Carousel (Top small ticker carousel next to breaking tag)
+            supabase.from('articles').select('id, title, slug').eq('status', 'published').order('published_at', { ascending: false }).limit(5),
+            
+            // 4. Featured News Slider (The secondary layout carousel row)
+            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').eq('featured', true).order('published_at', { ascending: true }).limit(6),
+            
+            // 5. News Grid with Sidebar (The central main story cards grid layout)
             supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').order('published_at', { ascending: false }).limit(8),
-            // 4. Popular News Section (e.g., sort by views or fallback to recent)
-            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').order('published_at', { ascending: false }).limit(4),
-            // 5. Trending Carousel Ticker (For that top marquee slider slot)
-            supabase.from('articles').select('id, title, slug').eq('status', 'published').order('published_at', { ascending: false }).limit(6)
+            
+            // 6. Popular News (Sidebar / footer carousel tracking top stories)
+            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').order('published_at', { ascending: false }).limit(4)
         ]);
 
         return {
             breaking: breaking.data || [],
-            featured: featured.data || [],
-            recent: recent.data || [],
-            popular: popular.data || [],
-            trendingTicker: trendingTicker.data || []
+            featuredMain: featuredMain.data || [],
+            trendingTicker: trendingTicker.data || [],
+            featuredSlider: featuredSlider.data || [],
+            recentGrid: recentGrid.data || [],
+            popular: popular.data || []
         };
     } catch (err) {
         console.error("Error gathering homepage data layers:", err);
-        return { breaking: [], featured: [], recent: [], popular: [], trendingTicker: [] };
+        return { breaking: [], featuredMain: [], trendingTicker: [], featuredSlider: [], recentGrid: [], popular: [] };
     }
 }
 
