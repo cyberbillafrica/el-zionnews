@@ -5,22 +5,32 @@ function getQueryParam(param) {
 }
 
 // 2. Fetch Feeds for index.html (Homepage)
-async function fetchHomepageFeeds() {
+
+async function fetchHomepageLayoutData() {
     try {
-        const [breaking, featured, recent] = await Promise.all([
-            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').eq('breaking_news', true).order('published_at', { ascending: false }).limit(5),
+        const [breaking, featured, recent, popular, trendingTicker] = await Promise.all([
+            // 1. Breaking News (for main grid or sections if needed)
+            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').eq('breaking_news', true).order('published_at', { ascending: false }).limit(4),
+            // 2. Main News Slider (Featured items across all sections)
             supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').eq('featured', true).order('published_at', { ascending: false }).limit(4),
-            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').order('published_at', { ascending: false }).limit(10)
+            // 3. Main Recent News Grid
+            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').order('published_at', { ascending: false }).limit(8),
+            // 4. Popular News Section (e.g., sort by views or fallback to recent)
+            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').order('published_at', { ascending: false }).limit(4),
+            // 5. Trending Carousel Ticker (For that top marquee slider slot)
+            supabase.from('articles').select('id, title, slug').eq('status', 'published').order('published_at', { ascending: false }).limit(6)
         ]);
 
         return {
             breaking: breaking.data || [],
             featured: featured.data || [],
-            recent: recent.data || []
+            recent: recent.data || [],
+            popular: popular.data || [],
+            trendingTicker: trendingTicker.data || []
         };
     } catch (err) {
-        console.error("Error loading homepage data:", err);
-        return { breaking: [], featured: [], recent: [] };
+        console.error("Error gathering homepage data layers:", err);
+        return { breaking: [], featured: [], recent: [], popular: [], trendingTicker: [] };
     }
 }
 
