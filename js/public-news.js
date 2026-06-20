@@ -1,3 +1,8 @@
+// Ensure Supabase is available
+if (typeof window.supabase === 'undefined') {
+    console.error("Supabase library not loaded. Check script order.");
+}
+
 // 1. Base URL Parser Helper
 function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
@@ -45,13 +50,19 @@ async function fetchHomepageLayoutData() {
 // 3. Fetch Category Specific Feeds
 async function fetchCategoryLayoutData(categorySlugOrName) {
     try {
-        // First, let's grab the true category UUID using its name or slug from your categories table
-        const { data: catData } = await supabase
+        if (!supabase) throw new Error("Supabase client not initialized");
+
+        // First, let's grab the true category UUID...
+        const { data: catData, error: catError } = await supabase
             .from('categories')
             .select('id')
-            .ilike('name', categorySlugOrName)
+            .ilike('name', `%${categorySlugOrName}%`)
             .single();
-            
+
+        if (catError && catError.code !== 'PGRST116') {
+            console.warn("Category lookup error:", catError);
+        }
+
         const catId = catData ? catData.id : categorySlugOrName;
 
         const [allArticles, breaking, featured, trending] = await Promise.all([
@@ -72,7 +83,6 @@ async function fetchCategoryLayoutData(categorySlugOrName) {
         return { articles: [], breaking: [], featured: [], trending: [] };
     }
 }
-
 // 4. Fetch Single Article Data + Associated Comments
 async function fetchSingleArticleDetails() {
     const urlParams = new URLSearchParams(window.location.search);
