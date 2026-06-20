@@ -2,6 +2,10 @@
 if (typeof window.supabase === 'undefined') {
     console.error("Supabase library not loaded. Check script order.");
 }
+// Wait for Supabase to be ready
+if (typeof window.supabase === 'undefined') {
+    console.error("❌ Supabase client not found. Check script loading order.");
+}
 
 // 1. Base URL Parser Helper
 function getQueryParam(param) {
