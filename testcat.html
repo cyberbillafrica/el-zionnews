@@ -282,7 +282,7 @@
 <div class="container-fluid">
     <div  class="row">
         <div class="col-lg-7 px-0">
-            <div class="owl-carousel main-carousel position-relative">
+            <div id="main-slider-target" class="owl-carousel main-carousel position-relative">
                 <div class="position-relative overflow-hidden" style="height: 500px;">
                     <img class="img-fluid h-100" src="img/news-800x500-1.jpg" style="object-fit: cover;">
                     <div class="overlay">
@@ -383,7 +383,7 @@
         <div class="section-title">
             <h4 class="m-0 text-uppercase font-weight-bold">Featured News</h4>
         </div>
-        <div id="trending-target" class="owl-carousel news-carousel carousel-item-4 position-relative">
+        <div id="featured-slider-target" class="owl-carousel news-carousel carousel-item-4 position-relative">
             <div class="position-relative overflow-hidden" style="height: 300px;">
                 <img class="img-fluid h-100" src="img/news-700x435-1.jpg" style="object-fit: cover;">
                 <div class="overlay">
@@ -446,7 +446,7 @@
    
     <div class="container-fluid pt-5 mb-3">
         <div class="container">
-            <div id="trending-target class="row">
+            <div id="trending-target" class="row">
                 <div class="col-12">
                     <div class="section-title">
                         <h4 class="m-0 text-uppercase font-weight-bold">More News</h4>
@@ -537,7 +537,7 @@
             <!-- Main Content Start -->
             <div class="col-lg-8">
                 <!-- Latest News Section Start -->
-                <div class="row">
+                <div id="main-grid-target" class="row">
                     <div class="col-12">
                         <div class="section-title">
                             <h4 class="m-0 text-uppercase font-weight-bold">Latest News</h4>
@@ -734,7 +734,7 @@
                     <div class="section-title mb-0">
                         <h4 class="m-0 text-uppercase font-weight-bold">Trending News</h4>
                     </div>
-                    <div id="trending-target" class="bg-white border border-top-0 p-3">
+                    <div id="category-sidebar-trending" class="bg-white border border-top-0 p-3">
                         <div class="d-flex align-items-center bg-white mb-3" style="height: 110px;">
                             <img class="img-fluid" src="img/news-110x110-1.jpg" alt="">
                             <div class="w-100 h-100 px-3 d-flex flex-column justify-content-center border border-left-0">
@@ -892,55 +892,57 @@
     <script src="../js/public-news.js"></script>
     
     <script>
-        document.addEventListener("DOMContentLoaded", async () => {
-            const currentCategory = 'testcat'; // Adapt this per page layout file
+        document.addEventListener('DOMContentLoaded', async () => {
+            const categorySlug = getCategorySlugFromUrl(null);
 
-            // Pull structural dataset slice
-            const data = await fetchCategoryLayoutData(currentCategory);
+            if (!categorySlug) {
+                console.warn('No category slug found. Use ?view=sports (or similar) in the URL.');
+                return;
+            }
 
-            // Trigger granular rendering paths safely
+            const heading = document.querySelector('.section-title h4');
+            if (heading) heading.innerText = `${categorySlug.replace(/-/g, ' ')} News`;
+
+            const data = await fetchCategoryLayoutData(categorySlug);
+
             renderMarquee(data.breaking);
             renderMainSlider(data.featured);
             renderMainGrid(data.articles);
             renderTrending(data.trending);
         });
 
-        // 1. SCROLLING MARQUEE TICKER
         function renderMarquee(items) {
             const el = document.getElementById('marquee-target');
             if (!el || items.length === 0) return;
             el.innerHTML = items.map(art => `
-                <a class="text-white font-weight-semi-bold mx-3" href="../a_sample.html?slug=${art.slug}">${escapeHTML(art.title)}</a>
+                <a class="text-white font-weight-semi-bold mx-3" href="a_sample.html?slug=${encodeURIComponent(art.slug)}">${escapeHTML(art.title)}</a>
             `).join(' | ');
         }
 
-        // 2. MAIN NEWS CAROUSEL SLIDER (Fixes jQuery Carousel initialization glitch)
         function renderMainSlider(items) {
             const container = document.getElementById('main-slider-target');
             if (!container || items.length === 0) return;
 
-            // Destroy previous instance if template JavaScript ran early
             if ($(container).hasClass('owl-loaded')) {
                 $(container).owlCarousel('destroy');
             }
 
             container.innerHTML = items.map(art => `
                 <div class="position-relative overflow-hidden" style="height: 500px;">
-                    <img class="img-fluid h-100 w-100" src="${art.featured_image || '../img/placeholder.jpg'}" style="object-fit: cover;">
+                    <img class="img-fluid h-100 w-100" src="${art.featured_image || 'img/placeholder.jpg'}" style="object-fit: cover;">
                     <div class="overlay">
                         <div class="mb-2">
-                            <a class="badge badge-primary text-uppercase font-weight-semi-bold p-2 mr-2" href="#">${escapeHTML(art.category_id)}</a>
-                            <span class="text-white"><small>${new Date(art.published_at).toLocaleDateString()}</small></span>
+                            <span class="badge badge-primary text-uppercase font-weight-semi-bold p-2 mr-2">${escapeHTML(getCategoryName(art))}</span>
+                            <span class="text-white"><small>${formatArticleDate(art.published_at)}</small></span>
                         </div>
                         <h1 class="h1 mb-3 font-weight-bold">
-                            <a class="text-white" href="../a_sample.html?slug=${art.slug}">${escapeHTML(art.title)}</a>
+                            <a class="text-white" href="a_sample.html?slug=${encodeURIComponent(art.slug)}">${escapeHTML(art.title)}</a>
                         </h1>
                         <p class="text-white">${escapeHTML(art.excerpt || '')}</p>
                     </div>
                 </div>
             `).join('');
 
-            // Re-initialize Owl Carousel cleanly on your new live elements
             $(container).owlCarousel({
                 autoplay: true,
                 smartSpeed: 1500,
@@ -950,27 +952,26 @@
             });
         }
 
-        // 3. MAIN NEWS GRID
         function renderMainGrid(articles) {
             const container = document.getElementById('main-grid-target');
             if (!container) return;
 
             if (articles.length === 0) {
-                container.innerHTML = `<p class="text-muted p-4">No content posts available here yet.</p>`;
+                container.innerHTML = '<p class="text-muted p-4 col-12">No content posts available for this category yet.</p>';
                 return;
             }
 
             container.innerHTML = articles.map(art => `
                 <div class="col-lg-6 mb-4">
                     <div class="position-relative mb-3">
-                        <img class="img-fluid w-100" src="${art.featured_image || '../img/placeholder.jpg'}" style="object-fit: cover; height: 220px;" alt="">
+                        <img class="img-fluid w-100" src="${art.featured_image || 'img/placeholder.jpg'}" style="object-fit: cover; height: 220px;" alt="">
                         <div class="bg-white border border-top-0 p-4">
                             <div class="mb-2">
-                                <a class="badge badge-primary text-uppercase font-weight-semi-bold p-2 mr-2" href="#">${escapeHTML(art.category_id)}</a>
-                                <span class="text-body"><small>${new Date(art.published_at).toLocaleDateString()}</small></span>
+                                <span class="badge badge-primary text-uppercase font-weight-semi-bold p-2 mr-2">${escapeHTML(getCategoryName(art))}</span>
+                                <span class="text-body"><small>${formatArticleDate(art.published_at)}</small></span>
                             </div>
                             <h4 class="h4 mb-3 font-weight-bold">
-                                <a class="text-dark" href="../a_sample.html?slug=${art.slug}">${escapeHTML(art.title)}</a>
+                                <a class="text-dark" href="a_sample.html?slug=${encodeURIComponent(art.slug)}">${escapeHTML(art.title)}</a>
                             </h4>
                             <p class="m-0">${escapeHTML(art.excerpt || '')}</p>
                         </div>
@@ -979,29 +980,21 @@
             `).join('');
         }
 
-        // 4. TRENDING SIDEBAR COLUMN
         function renderTrending(trendingItems) {
-            const container = document.getElementById('trending-target');
+            const container = document.getElementById('category-sidebar-trending');
             if (!container || trendingItems.length === 0) return;
 
             container.innerHTML = trendingItems.map(art => `
                 <div class="d-flex align-items-center bg-white border mb-3" style="height: 110px;">
-                    <img class="img-fluid" src="${art.featured_image || '../img/placeholder.jpg'}" style="width: 110px; height: 110px; object-fit: cover;" alt="">
+                    <img class="img-fluid" src="${art.featured_image || 'img/placeholder.jpg'}" style="width: 110px; height: 110px; object-fit: cover;" alt="">
                     <div class="w-100 h-100 px-3 d-flex flex-column justify-content-center border-left-0">
                         <div class="mb-2">
-                            <span class="text-body"><small>${new Date(art.published_at).toLocaleDateString()}</small></span>
+                            <span class="text-body"><small>${formatArticleDate(art.published_at)}</small></span>
                         </div>
-                        <a class="h6 m-0 text-secondary text-truncate-2 font-weight-bold" href="../a_sample.html?slug=${art.slug}">${escapeHTML(art.title)}</a>
+                        <a class="h6 m-0 text-secondary text-truncate-2 font-weight-bold" href="a_sample.html?slug=${encodeURIComponent(art.slug)}">${escapeHTML(art.title)}</a>
                     </div>
                 </div>
             `).join('');
-        }
-
-        function escapeHTML(str) {
-            if (!str) return '';
-            return str.replace(/[&<>'"]/g, 
-                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
-            );
         }
     </script>
 </body>

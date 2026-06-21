@@ -1,40 +1,93 @@
-// Ensure Supabase is available
-if (typeof window.supabase === 'undefined') {
-    console.error("Supabase library not loaded. Check script order.");
-}
-// Wait for Supabase to be ready
-if (typeof window.supabase === 'undefined') {
-    console.error("❌ Supabase client not found. Check script loading order.");
+// Shared public-site helpers (available globally for inline page scripts)
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g,
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+    );
 }
 
-// 1. Base URL Parser Helper
+function formatArticleDate(isoDate) {
+    if (!isoDate) return '';
+    return new Date(isoDate).toLocaleDateString(undefined, {
+        year: 'numeric', month: 'long', day: 'numeric'
+    });
+}
+
+function getCategoryName(article) {
+    return article?.categories?.name || 'News';
+}
+
+function getCategorySlug(article) {
+    return article?.categories?.slug || '';
+}
+
+function getArticleTags(article) {
+    if (!article?.article_tags?.length) return [];
+    return article.article_tags
+        .map(row => row.tags?.name)
+        .filter(Boolean);
+}
+
+function articleCardHTML(art, linkPrefix = '') {
+    const category = getCategoryName(art);
+    const href = `${linkPrefix}a_sample.html?slug=${encodeURIComponent(art.slug)}`;
+    const img = art.featured_image || 'img/placeholder.jpg';
+    const date = formatArticleDate(art.published_at);
+
+    return `
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="position-relative mb-3">
+                <img class="img-fluid w-100" src="${escapeHTML(img)}" style="object-fit: cover; height: 220px;" alt="">
+                <div class="bg-white border border-top-0 p-4">
+                    <div class="mb-2">
+                        <span class="badge badge-primary text-uppercase font-weight-semi-bold p-2 mr-2">${escapeHTML(category)}</span>
+                        <span class="text-body"><small>${escapeHTML(date)}</small></span>
+                    </div>
+                    <h4 class="h5 mb-2 font-weight-bold">
+                        <a class="text-dark" href="${href}">${escapeHTML(art.title)}</a>
+                    </h4>
+                    <p class="m-0 small text-muted">${escapeHTML(art.excerpt || '')}</p>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 function getQueryParam(param) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(param);
+    return new URLSearchParams(window.location.search).get(param);
 }
 
-// 2. Fetch Feeds for index.html (Homepage)
+function getCategorySlugFromUrl(fallbackSlug) {
+    const view = getQueryParam('view');
+    if (view) return view.toLowerCase().trim();
+
+    if (fallbackSlug) return fallbackSlug.toLowerCase().trim();
+
+    const file = window.location.pathname.split('/').pop() || '';
+    const base = file.replace('.html', '');
+    return base && base !== 'index' && base !== 'testcat' ? base : null;
+}
+
+// ---------------------------------------------------------------------------
+// Homepage feeds
+// ---------------------------------------------------------------------------
 
 async function fetchHomepageLayoutData() {
     try {
-        const [breaking, featuredMain, recentGrid, popular, trendingTicker, featuredSlider] = await Promise.all([
-            // 1. Scrolling Breaking News (Static array text items for Marquee)
-            supabase.from('articles').select('id, title, slug').eq('status', 'published').eq('breaking_news', true).order('published_at', { ascending: false }).limit(6),
-            
-            // 2. Main News Hero Slider (Top big banner articles)
-            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').eq('featured', true).order('published_at', { ascending: false }).limit(4),
-            
-            // 3. Trending Carousel (Top small ticker carousel next to breaking tag)
+        const [
+            breaking,
+            featuredMain,
+            trendingTicker,
+            featuredSlider,
+            recentGrid,
+            popular
+        ] = await Promise.all([
+            supabase.from('articles').select('id, title, slug, categories(name)').eq('status', 'published').eq('breaking_news', true).order('published_at', { ascending: false }).limit(6),
+            supabase.from('articles').select('*, categories(name, slug), profiles(full_name)').eq('status', 'published').eq('featured', true).order('published_at', { ascending: false }).limit(4),
             supabase.from('articles').select('id, title, slug').eq('status', 'published').order('published_at', { ascending: false }).limit(5),
-            
-            // 4. Featured News Slider (The secondary layout carousel row)
-            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').eq('featured', true).order('published_at', { ascending: true }).limit(6),
-            
-            // 5. News Grid with Sidebar (The central main story cards grid layout)
-            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').order('published_at', { ascending: false }).limit(8),
-            
-            // 6. Popular News (Sidebar / footer carousel tracking top stories)
-            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').order('published_at', { ascending: false }).limit(4)
+            supabase.from('articles').select('*, categories(name, slug), profiles(full_name)').eq('status', 'published').eq('featured', true).order('published_at', { ascending: true }).limit(6),
+            supabase.from('articles').select('*, categories(name, slug), profiles(full_name)').eq('status', 'published').order('published_at', { ascending: false }).limit(8),
+            supabase.from('articles').select('*, categories(name, slug), profiles(full_name)').eq('status', 'published').order('views', { ascending: false }).limit(4)
         ]);
 
         return {
@@ -46,98 +99,167 @@ async function fetchHomepageLayoutData() {
             popular: popular.data || []
         };
     } catch (err) {
-        console.error("Error gathering homepage data layers:", err);
+        console.error('Error gathering homepage data layers:', err);
         return { breaking: [], featuredMain: [], trendingTicker: [], featuredSlider: [], recentGrid: [], popular: [] };
     }
 }
 
-// 3. Fetch Category Specific Feeds
-async function fetchCategoryLayoutData(categorySlugOrName) {
+async function fetchHomepageSectionsData() {
     try {
-        if (!supabase) throw new Error("Supabase client not initialized");
+        const { data: sections, error: secErr } = await supabase
+            .from('homepage_sections')
+            .select('id, name, slug')
+            .order('name');
 
-        // First, let's grab the true category UUID...
-        const { data: catData, error: catError } = await supabase
-            .from('categories')
-            .select('id')
-            .ilike('name', `%${categorySlugOrName}%`)
-            .single();
+        if (secErr) throw secErr;
+        if (!sections?.length) return {};
 
-        if (catError && catError.code !== 'PGRST116') {
-            console.warn("Category lookup error:", catError);
+        const results = await Promise.all(
+            sections.map(async (section) => {
+                const { data: rows, error } = await supabase
+                    .from('homepage_articles')
+                    .select(`
+                        display_order,
+                        articles:article_id (
+                            id, title, slug, excerpt, featured_image, published_at, status,
+                            categories (name, slug)
+                        )
+                    `)
+                    .eq('section_id', section.id)
+                    .order('display_order', { ascending: true });
+
+                if (error) {
+                    console.warn(`Homepage section "${section.slug}" load error:`, error);
+                    return [section.slug, []];
+                }
+
+                const articles = (rows || [])
+                    .map(row => row.articles)
+                    .filter(art => art && art.status === 'published');
+
+                return [section.slug, articles];
+            })
+        );
+
+        return Object.fromEntries(results);
+    } catch (err) {
+        console.error('Error loading homepage sections:', err);
+        return {};
+    }
+}
+
+function renderHomepageSectionGrids(sectionData, linkPrefix = '') {
+    Object.entries(sectionData).forEach(([slug, articles]) => {
+        const container = document.getElementById(`section-${slug}`);
+        if (!container) return;
+
+        if (!articles.length) {
+            container.innerHTML = '<p class="text-muted col-12">No articles assigned to this section yet.</p>';
+            return;
         }
 
-        const catId = catData ? catData.id : categorySlugOrName;
+        container.innerHTML = articles.map(art => articleCardHTML(art, linkPrefix)).join('');
+    });
+}
 
-        const [allArticles, breaking, featured, trending] = await Promise.all([
-            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').eq('category_id', catId).order('published_at', { ascending: false }).limit(10),
-            supabase.from('articles').select('id, title, slug').eq('status', 'published').eq('breaking_news', true).eq('category_id', catId).order('published_at', { ascending: false }).limit(5),
-            supabase.from('articles').select('*, profiles(full_name)').eq('status', 'published').eq('featured', true).eq('category_id', catId).order('published_at', { ascending: false }).limit(4),
-            supabase.from('articles').select('id, title, slug, published_at, featured_image').eq('status', 'published').eq('category_id', catId).order('published_at', { ascending: false }).limit(5)
-        ]);
+// ---------------------------------------------------------------------------
+// Category pages
+// ---------------------------------------------------------------------------
 
-        return {
-            articles: allArticles.data || [],
-            breaking: breaking.data || [],
-            featured: featured.data || [],
-            trending: trending.data || []
-        };
+async function fetchCategoryArticles(categorySlug) {
+    if (!categorySlug) return [];
+
+    const { data, error } = await supabase
+        .from('articles')
+        .select(`
+            *,
+            categories!inner(name, slug),
+            profiles(full_name),
+            article_tags(tags(name))
+        `)
+        .eq('status', 'published')
+        .eq('categories.slug', categorySlug)
+        .order('published_at', { ascending: false });
+
+    if (error) {
+        console.error('Category article query error:', error);
+        return [];
+    }
+
+    return data || [];
+}
+
+async function fetchCategoryLayoutData(categorySlug) {
+    try {
+        const slug = categorySlug?.toLowerCase?.().trim();
+        if (!slug) return { articles: [], breaking: [], featured: [], trending: [] };
+
+        const articles = await fetchCategoryArticles(slug);
+
+        const breaking = articles.filter(a => a.breaking_news).slice(0, 5);
+        const featured = articles.filter(a => a.featured).slice(0, 4);
+        const trending = articles.slice(0, 5);
+
+        return { articles, breaking, featured, trending };
     } catch (err) {
-        console.error("Error loading category data layout:", err);
+        console.error('Error loading category data layout:', err);
         return { articles: [], breaking: [], featured: [], trending: [] };
     }
 }
-// 4. Fetch Single Article Data + Associated Comments
+
+// ---------------------------------------------------------------------------
+// Single article + comments
+// ---------------------------------------------------------------------------
+
 async function fetchSingleArticleDetails() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const slug = urlParams.get('slug');
+    const slug = getQueryParam('slug');
     if (!slug) return null;
 
     try {
-        // Fetch article matching your table layout
         const { data: article, error: artErr } = await supabase
             .from('articles')
-            .select('*, profiles(full_name)')
+            .select(`
+                *,
+                profiles(full_name),
+                categories(name, slug),
+                article_tags(tags(name, slug))
+            `)
             .eq('slug', slug)
             .eq('status', 'published')
             .single();
 
         if (artErr) throw artErr;
 
-        // Fetch comments matching your EXACT schema columns: id, article_id, name, email, comment, approved, created_at
-        // Filter strictly by approved = true so hidden/spam comments don't render publicly
         const { data: comments, error: commErr } = await supabase
             .from('comments')
             .select('id, name, email, comment, created_at')
             .eq('article_id', article.id)
-            .eq('approved', true) 
+            .eq('approved', true)
             .order('created_at', { ascending: true });
+
+        if (commErr) console.warn('Comments load warning:', commErr);
 
         return { article, comments: comments || [] };
     } catch (err) {
-        console.error("Error loading article or comments payload:", err);
+        console.error('Error loading article or comments payload:', err);
         return null;
     }
 }
 
-// Updated Comment Insertion Form Pipeline Engine
 async function submitComment(articleId, userName, userEmail, commentBody) {
     try {
-        // Maps exactly to columns: article_id, name, email, comment
-        const { data, error } = await supabase
-            .from('comments')
-            .insert([
-                { 
-                    article_id: articleId, 
-                    name: userName, 
-                    email: userEmail, 
-                    comment: commentBody 
-                }
-            ]);
+        const payload = {
+            article_id: articleId,
+            name: userName,
+            email: userEmail,
+            comment: commentBody
+        };
+
+        const { error } = await supabase.from('comments').insert([payload]);
         if (error) throw error;
         return { success: true };
     } catch (error) {
-        console.error("Database comment insertion error:", error.message);
+        console.error('Database comment insertion error:', error.message);
         return { success: false, error: error.message };
     }
 }
