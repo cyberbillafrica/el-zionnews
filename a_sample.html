@@ -627,7 +627,7 @@
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-public.js"></script>
     <script src="js/public-news.js"></script>
     <script src="js/public-comments.js"></script>
@@ -704,6 +704,10 @@
                     : '';
             }
         }
+
+
+
+        /* Comments Rendering and Form Handling */
 
     function renderCommentsList(comments) {
 
@@ -792,12 +796,16 @@
                 }
 
                 const result = await submitComment(articleId, name, email, text);
-
                 if (result.success) {
-                    alert('Thank you! Your comment has been posted successfully.');
-                    nameInput.value = '';
-                    emailInput.value = '';
-                    textInput.value = '';
+                alert('Thank you! Your comment has been posted successfully.');
+                nameInput.value = '';
+                emailInput.value = '';
+                textInput.value = '';
+
+                // Refresh comments immediately
+                await loadComments(articleId);
+
+            
                 } else {
                     alert(`Could not process comment entry: ${result.error}`);
                 }
@@ -808,7 +816,19 @@
                 }
             });
         }
-    </script>
+
+    
+    
+    async function loadComments(articleId){
+    try {
+    const comments = await getArticleComments(articleId);
+    renderCommentsList(comments);
+    } catch(error){
+    console.error("Loading comments failed:", error);
+    }
+
+}
+   </script>
 	
 </body>
 
