@@ -313,11 +313,9 @@
         await syncCategoriesDropdown();
         setupEventListeners();
       } catch (err) {
-        console.error("Auth initialization error:", err);
-        // Sign out to prevent redirect loop — clear any stale session state
-        await supabase.auth.signOut();
-        window.location.href = 'index.html'; 
-      }
+        console.error("Dashboard initialization error:", err);
+  alert("Dashboard loading failed: " + err.message);
+}
     }
 
     // --- Dropdown Population Queries ---
