@@ -278,6 +278,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
     import { getSession, signOut } from './services/auth.js';
+    import { getAllComments, hideComment, deleteComment } from './services/comments.js';
     import { isAdmin } from './services/roles.js';
     import { getArticles, updateArticle, deleteArticle, createArticle } from './services/articles.js';
     import { uploadMediaAsset } from './services/media.js';
@@ -522,39 +523,107 @@
       }
     }
 
-    // --- Public Comment Feed Moderation Desk ---
-    async function renderCommentsQueue() {
-      const tbody = document.getElementById('commentsTableBody');
-      tbody.innerHTML = '';
-      
-      const { data, error } = await supabase
-        .from('comments')
-        .select('id, comment, email, created_at, articles(title)')
-        .order('created_at', { ascending: false });
+    // --- Public Comment Moderation Desk ---
+async function renderCommentsQueue() {
 
-      if (error || !data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-muted text-center p-3">No active reader comments records found.</td></tr>';
-        return;
-      }
+  const tbody = document.getElementById('commentsTableBody');
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="5" class="text-center text-muted">
+        Loading comments...
+      </td>
+    </tr>
+  `;
 
-      data.forEach(c => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="small fw-bold text-dark">${c.articles?.title || 'Unknown Asset Context'}</td>
-          <td class="small">${c.email || 'Anonymous Reader'}</td>
-          <td><p class="small mb-0 text-secondary" style="max-width: 350px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${c.comment}</p></td>
-          <td><button class="btn btn-sm btn-outline-danger py-1" onclick="deleteCommentRecord('${c.id}')"><i class="bi bi-trash"></i></button></td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
 
-    window.deleteCommentRecord = async function(id) {
-      if (confirm('Permanently wipe this reader comment copy off the platform public grid?')) {
-        await supabase.from('comments').delete().eq('id', id);
-        renderCommentsQueue();
-      }
-    };
+  const comments = await getAllComments();
+
+
+  if (!comments || comments.length === 0) {
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="text-center text-muted">
+          No comments found.
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+
+  tbody.innerHTML = comments.map(c => `
+
+    <tr>
+
+      <td>
+        ${c.articles?.title || 'Unknown Article'}
+      </td>
+
+
+      <td>
+        <strong>${c.name}</strong>
+        <br>
+        <small>${c.email}</small>
+      </td>
+
+
+      <td>
+        ${c.comment}
+      </td>
+
+
+      <td>
+        ${new Date(c.created_at).toLocaleDateString()}
+      </td>
+
+
+      <td>
+
+        <button 
+          class="btn btn-sm btn-warning"
+          onclick="hideDashboardComment('${c.id}')">
+          Hide
+        </button>
+
+
+        <button 
+          class="btn btn-sm btn-danger"
+          onclick="deleteDashboardComment('${c.id}')">
+          Delete
+        </button>
+
+      </td>
+
+
+    </tr>
+
+  `).join('');
+
+}
+
+window.hideDashboardComment = async function(id){
+
+  await hideComment(id);
+
+  await renderCommentsQueue();
+
+};
+
+
+window.deleteDashboardComment = async function(id){
+
+  if(confirm('Delete this comment permanently?')){
+
+    await deleteComment(id);
+
+    await renderCommentsQueue();
+
+  }
+
+};
+
 
     // Start Security Orchestration Protocol
     ensureAuth();

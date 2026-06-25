@@ -380,6 +380,7 @@
     </p>
 </div>
 
+<h2>Add Your Comment</h2>
 
 <form id="comment-form" class="comment-form">
 
@@ -701,25 +702,65 @@
             }
         }
 
-        function renderCommentsList(comments) {
-            const commentsContainer = document.getElementById('comments-list-target');
-            if (!commentsContainer) return;
+    function renderCommentsList(comments) {
 
-            if (!comments.length) {
-                commentsContainer.innerHTML = '<p class="text-muted no-comments-msg">No comments yet. Be the first to join the conversation!</p>';
-                return;
-            }
+    const commentsContainer = document.getElementById('comments-list-target');
+    if (!commentsContainer) return;
+    if (!comments.length) {
+        commentsContainer.innerHTML =
+        '<p class="text-muted no-comments-msg">No comments yet. Be the first to join the conversation!</p>';
 
-            commentsContainer.innerHTML = comments.map(c => `
-                <div class="comment-card mb-3 p-3 shadow-sm" style="background: #f9f9f9; border-left: 4px solid #0056b3; border-radius: 4px;">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <strong class="comment-author text-dark" style="font-size: 0.95rem;">${escapeHTML(c.name || 'Anonymous')}</strong>
-                        <small class="comment-date text-muted" style="font-size: 0.8rem;">${new Date(c.created_at).toLocaleDateString()}</small>
-                    </div>
-                    <p class="comment-text mb-0 text-secondary" style="font-size: 0.9rem; line-height: 1.4;">${escapeHTML(c.comment)}</p>
-                </div>
-            `).join('');
-        }
+        return;
+    }
+    const borderColors = [
+        '#0056b3',
+        '#198754',
+        '#dc3545',
+        '#6f42c1',
+        '#fd7e14'
+    ];
+    commentsContainer.innerHTML = comments.map((c, index) => `
+
+        <div class="comment-card mb-3 p-3 shadow-sm"
+        style="
+        background:#f9f9f9;
+        border-left:4px solid ${borderColors[index % borderColors.length]};
+        border-radius:4px;
+        ">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <strong 
+                class="comment-author text-dark"
+                style="font-size:0.95rem;">
+                    ${escapeHTML(c.name || 'Anonymous')}
+                </strong>
+                <small 
+                class="comment-date text-muted"
+                style="font-size:0.8rem;">
+                    ${new Date(c.created_at).toLocaleDateString()}
+                </small>
+
+            </div>
+            <p 
+            class="comment-text mb-2 text-secondary"
+            style="font-size:0.9rem;line-height:1.4;">
+                ${escapeHTML(c.comment)}
+            </p>
+            <div class="comment-actions">
+              <button 
+                class="btn btn-sm btn-outline-primary">
+                    👍 Like
+                </button>
+
+                <button 
+                class="btn btn-sm btn-outline-secondary">
+                    💬 Reply
+                </button>
+            </div>
+        </div>
+
+    `).join('');
+}
+
 
         function setupCommentForm(articleId) {
             const commentForm = document.getElementById('comment-form');
@@ -750,7 +791,7 @@
                 const result = await submitComment(articleId, name, email, text);
 
                 if (result.success) {
-                    alert('Thank you! Your comment has been submitted and is awaiting moderation approval.');
+                    alert('Thank you! Your comment has been posted successfully.');
                     nameInput.value = '';
                     emailInput.value = '';
                     textInput.value = '';
