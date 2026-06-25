@@ -4,19 +4,19 @@ import { supabase } from './supabase.js';
  * Fetches articles with option to filter by status*/
 export async function getArticles(statusFilter = null) {
   
-  // Build the query – identical select / join to your original
+  // 1. Build the query WITHOUT meta_image in the select string
   let query = supabase
     .from('articles')
     .select(`
       id, title, slug, status, created_at, published_at, breaking_news, views,
       featured_image, category_id, author_id,
-      seo_title, seo_description, meta_image,
+      seo_title, seo_description,
       profiles (full_name),
       categories (name),
       comments (id, comment, email, created_at)
     `)
     .order('created_at', { ascending: false })
-    .limit(10);               // <-- bring back only the last 10 rows
+    .limit(10);
 
   // Apply optional status filter
   if (statusFilter) {
@@ -27,16 +27,15 @@ export async function getArticles(statusFilter = null) {
   const { data, error } = await query;
   if (error) throw error;
 
-  // Map rows – meta_image is always set to featured_image
+  // 2. Safely map the data and inject the meta_image property dynamically
   const articles = data.map(article => ({
     ...article,
-    // If the row already has a meta_image, use it; otherwise fall back to featured_image
-    meta_image: article.meta_image || article.featured_image,
+    // Since meta_image isn't in the DB, it always defaults to featured_image
+    meta_image: article.featured_image, 
   }));
 
   return articles;
 }
-
 /**
  * Creates an article and maps its many-to-many relationship tags
  * Supports the new migration schema fields including: breaking_news, view, meta_* fields, etc.
