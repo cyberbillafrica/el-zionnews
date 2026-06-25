@@ -11,7 +11,7 @@ export async function getArticles(statusFilter = null) {
     .select(`
       id, title, slug, status, created_at, published_at, breaking_news, views,
       featured_image, category_id, author_id,
-      meta_title, meta_description, meta_keywords, meta_image,
+      seo_title, seo_description, meta_keywords, meta_image,
       profiles (full_name),
       categories (name),
       comments (id, comment, email, created_at)
