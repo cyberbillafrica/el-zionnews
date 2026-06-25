@@ -330,7 +330,7 @@
 
     // --- Operational Statistics Matrix counters ---
     async function loadDashboardStats() {
-      const totalArticles = await getArticles();
+      const totalArticles = [];
       document.getElementById('totalArticles').textContent = totalArticles.length;
       document.getElementById('publishedCount').textContent = totalArticles.filter(a => a.status === 'published').length;
       document.getElementById('pendingCount').textContent = totalArticles.filter(a => a.status === 'pending_review').length;

@@ -175,25 +175,28 @@
     });
 
     // Unified Routing Core Engine (FIXED FOR THE INFINITE LOOP)
-    async function routeUserByRole() {
-      try {
-        const role = await getUserRole();
+        async function routeUserByRole() {
+          try {
+            const role = await getUserRole();
         
-        if (role === 'super_admin' || role === 'admin') {
-          window.location.href = 'dashboard.html';
-        } else if (role === 'editor' || role === 'author') {
-          window.location.href = 'editor-console.html';
-        } else {
-          // BREAK THE LOOP: Clear active credentials if profile mapping is missing
-          await supabase.auth.signOut();
-          showAlert('Access Denied: Your staff profile role configuration is blank or unauthorized.');
+            if (role === 'super_admin' || role === 'admin') {
+              window.location.href = 'dashboard.html';
+            } else if (role === 'editor' || role === 'author') {
+              window.location.href = 'editor-console.html';
+            } else if (role === null) {
+              // No role found – probably profile not set up yet. Show a clear message
+              // Do NOT sign out – keep session so the user can be re‑directed after fixing profile.
+              showAlert('Access denied: Your staff profile is not configured. Contact the system administrator.', false);
+            } else {
+              // Unknown/unauthorized role – just inform the user without forcing a sign‑out.
+              showAlert('Access denied: Unauthorized role.', false);
+            }
+          } catch (err) {
+            // If something goes really wrong, clear credentials to avoid a loop and inform the user.
+            await supabase.auth.signOut();
+            showAlert('Routing authentication failure: ' + err.message);
+          }
         }
-      } catch (err) {
-        // BREAK THE LOOP: Stop running on initialization crashes
-        await supabase.auth.signOut();
-        showAlert('Routing authentication failure: ' + err.message);
-      }
-    }
 
     // Initialization: Trap auth status and catch password recovery hashes
     window.addEventListener('DOMContentLoaded', async () => {
