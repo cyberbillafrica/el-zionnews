@@ -5,7 +5,8 @@ import { supabase } from './supabase.js';
  * Includes new fields from migration schema: breaking_news, view, meta_* fields, etc.
  * NOW ALSO includes comments for real-time dashboard display
  */
-export async function getArticles(statusFilter = null) {
+async function getArticles(statusFilter = null) {
+  // Build the query – identical select / join to your original
   let query = supabase
     .from('articles')
     .select(`
@@ -16,23 +17,27 @@ export async function getArticles(statusFilter = null) {
       categories (name),
       comments (id, comment, email, created_at)
     `)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(10);               // <-- bring back only the last 10 rows
 
+  // Apply optional status filter
   if (statusFilter) {
     query = query.eq('status', statusFilter);
   }
 
+  // Execute the query
   const { data, error } = await query;
   if (error) throw error;
 
+  // Map rows – meta_image is always set to featured_image
   const articles = data.map(article => ({
     ...article,
-    meta_image: article.meta_image || article.featured_image
+    // If the row already has a meta_image, use it; otherwise fall back to featured_image
+    meta_image: article.meta_image || article.featured_image,
   }));
 
   return articles;
 }
-
 
 /**
  * Creates an article and maps its many-to-many relationship tags
