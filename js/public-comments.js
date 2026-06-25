@@ -25,38 +25,3 @@ async function getArticleComments(articleId) {
     return data;
 
 }
-
-
-
-/**
- * Submit comment
- */
-async function submitComment(articleId, name, email, comment) {
-
-
-    const { data, error } = await supabase
-        .from('comments')
-        .insert([
-            {
-                article_id: articleId,
-                name,
-                email,
-                comment,
-                likes: 0,
-                hidden: false
-            }
-        ])
-        .select()
-        .single();
-
-
-
-    if(error) throw error;
-
-
-    return {
-        success:true,
-        data
-    };
-
-}

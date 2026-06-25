@@ -212,10 +212,14 @@ async function fetchCategoryLayoutData(categorySlug) {
 // ---------------------------------------------------------------------------
 
 async function fetchSingleArticleDetails() {
+
     const slug = getQueryParam('slug');
+
     if (!slug) return null;
 
+
     try {
+
         const { data: article, error: artErr } = await supabase
             .from('articles')
             .select(`
@@ -227,39 +231,80 @@ async function fetchSingleArticleDetails() {
             .eq('slug', slug)
             .eq('status', 'published')
             .single();
-
         if (artErr) throw artErr;
+
 
         const { data: comments, error: commErr } = await supabase
             .from('comments')
-            .select('id, name, email, comment, created_at')
+            .select(`
+                id,
+                name,
+                email,
+                comment,
+                created_at,
+                likes,
+                parent_id
+            `)
             .eq('article_id', article.id)
-            .eq('approved', true)
+            .eq('hidden', false)
             .order('created_at', { ascending: true });
 
-        if (commErr) console.warn('Comments load warning:', commErr);
+        if (commErr) {
+            console.warn('Comments load warning:', commErr);
+        }
+        return {
+            article,
 
-        return { article, comments: comments || [] };
+            comments: comments || []
+        };
     } catch (err) {
-        console.error('Error loading article or comments payload:', err);
+        console.error(
+            'Error loading article or comments payload:',
+            err
+        );
         return null;
     }
+
 }
+
+// Submit new comment
 
 async function submitComment(articleId, userName, userEmail, commentBody) {
     try {
         const payload = {
+
             article_id: articleId,
+
             name: userName,
+
             email: userEmail,
-            comment: commentBody
+
+            comment: commentBody,
+
+            hidden: false,
+
+            likes: 0
+
         };
 
-        const { error } = await supabase.from('comments').insert([payload]);
+        const { error } = await supabase
+
+            .from('comments')
+
+            .insert([payload]);
         if (error) throw error;
-        return { success: true };
-    } catch (error) {
-        console.error('Database comment insertion error:', error.message);
-        return { success: false, error: error.message };
+        return {
+            success:true
+        };
+    } catch(error) {
+        console.error(
+            'Database comment insertion error:',
+            error.message
+        );
+        return {
+          success:false,
+            error:error.message
+        };
     }
+
 }
