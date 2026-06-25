@@ -1,11 +1,9 @@
 import { supabase } from './supabase.js';
 
 /**
- * Fetches articles with option to filter by status
- * Includes new fields from migration schema: breaking_news, view, meta_* fields, etc.
- * NOW ALSO includes comments for real-time dashboard display
- */
-export async function updateArticle(articleId, articleUpdates, tagIds = []) {
+ * Fetches articles with option to filter by status*/
+export async function getArticles(statusFilter = null) {
+  
   // Build the query – identical select / join to your original
   let query = supabase
     .from('articles')
