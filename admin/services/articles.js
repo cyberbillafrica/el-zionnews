@@ -14,7 +14,7 @@ export async function getArticles(statusFilter = null) {
       meta_title, meta_description, meta_keywords, meta_image,
       profiles (full_name),
       categories (name),
-      comments (id, comment, user_email, created_at)
+      comments (id, comment, email, created_at)
     `)
     .order('created_at', { ascending: false });
 

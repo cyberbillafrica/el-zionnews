@@ -330,7 +330,7 @@
 
     // --- Operational Statistics Matrix counters ---
     async function loadDashboardStats() {
-      const totalArticles = [];
+     const totalArticles = await getArticles();
       document.getElementById('totalArticles').textContent = totalArticles.length;
       document.getElementById('publishedCount').textContent = totalArticles.filter(a => a.status === 'published').length;
       document.getElementById('pendingCount').textContent = totalArticles.filter(a => a.status === 'pending_review').length;
@@ -531,7 +531,7 @@
       
       const { data, error } = await supabase
         .from('comments')
-        .select('id, comment, user_email, created_at, articles(title)')
+        .select('id, comment, email, created_at, articles(title)')
         .order('created_at', { ascending: false });
 
       if (error || !data || data.length === 0) {
@@ -543,7 +543,7 @@
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td class="small fw-bold text-dark">${c.articles?.title || 'Unknown Asset Context'}</td>
-          <td class="small">${c.user_email || 'Anonymous Reader'}</td>
+          <td class="small">${c.email || 'Anonymous Reader'}</td>
           <td><p class="small mb-0 text-secondary" style="max-width: 350px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${c.comment}</p></td>
           <td><button class="btn btn-sm btn-outline-danger py-1" onclick="deleteCommentRecord('${c.id}')"><i class="bi bi-trash"></i></button></td>
         `;
