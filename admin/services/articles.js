@@ -2,14 +2,14 @@ import { supabase } from './supabase.js';
 
 /**
  * Fetches articles with option to filter by status
- * Includes new fields from migration schema: breaking_news, view_count, meta_* fields, etc.
+ * Includes new fields from migration schema: breaking_news, view, meta_* fields, etc.
  * NOW ALSO includes comments for real-time dashboard display
  */
 export async function getArticles(statusFilter = null) {
   let query = supabase
     .from('articles')
     .select(`
-      id, title, slug, status, created_at, published_at, breaking_news, view_count,
+      id, title, slug, status, created_at, published_at, breaking_news, view,
       featured_image, category_id, author_id,
       meta_title, meta_description, meta_keywords, meta_image,
       profiles (full_name),
@@ -29,7 +29,7 @@ export async function getArticles(statusFilter = null) {
 
 /**
  * Creates an article and maps its many-to-many relationship tags
- * Supports the new migration schema fields including: breaking_news, view_count, meta_* fields, etc.
+ * Supports the new migration schema fields including: breaking_news, view, meta_* fields, etc.
  */
 export async function createArticle(articleData, tagIds = []) {
   // 1. Insert the article base row - supports new schema fields
