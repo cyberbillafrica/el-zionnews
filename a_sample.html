@@ -754,13 +754,18 @@
             </p>
             <div class="comment-actions">
               <button 
+                onclick="handleLike('${c.id}', this)"
                 class="btn btn-sm btn-outline-primary">
-                    👍 Like
-                </button>
 
-                <button 
+                👍 Like (${c.likes || 0})
+
+                </button>
+               <button
+                onclick="replyToComment('${c.id}')"
                 class="btn btn-sm btn-outline-secondary">
-                    💬 Reply
+
+                💬 Reply
+
                 </button>
             </div>
         </div>
@@ -817,8 +822,24 @@
             });
         }
 
-    
-    
+    window.handleLike = async function(id, btn){
+    const likes = await likeComment(id);
+    if(likes !== null){
+        btn.innerHTML = `👍 Like (${likes})`;
+    }
+};
+
+    window.replyToComment=function(id){
+    const reply = prompt(
+        "Write your reply:"
+    );
+    if(!reply) return;
+
+
+    // we will connect current user/article data here
+
+};
+
     async function loadComments(articleId){
     try {
     const comments = await getArticleComments(articleId);

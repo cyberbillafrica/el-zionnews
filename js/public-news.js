@@ -274,17 +274,11 @@ async function submitComment(articleId, userName, userEmail, commentBody) {
         const payload = {
 
             article_id: articleId,
-
             name: userName,
-
             email: userEmail,
-
             comment: commentBody,
-
             hidden: false,
-
             likes: 0
-
         };
 
         const { error } = await supabase
@@ -306,5 +300,60 @@ async function submitComment(articleId, userName, userEmail, commentBody) {
             error:error.message
         };
     }
+
+}
+
+async function likeComment(commentId) {
+
+    try {
+
+        const { data: comment, error } = await supabase
+            .from('comments')
+            .select('likes')
+            .eq('id', commentId)
+            .single();
+
+        if(error) throw error;
+        const newLikes = (comment.likes || 0) + 1;
+        const { error:updateError } = await supabase
+            .from('comments')
+            .update({
+                likes:newLikes
+            })
+            .eq('id', commentId);
+        if(updateError) throw updateError;
+        return newLikes;
+    } catch(error){
+        console.error(
+            "Like failed:",
+            error.message
+        );
+
+        return null;
+    }
+}
+
+async function replyComment(parentId, articleId, name, email, text){
+
+    const {error}=await supabase
+    .from('comments')
+    .insert([{
+
+        article_id:articleId,
+
+        parent_id:parentId,
+
+        name,
+
+        email,
+
+        comment:text,
+
+        likes:0,
+
+        hidden:false
+
+    }]);
+    if(error) throw error;
 
 }
