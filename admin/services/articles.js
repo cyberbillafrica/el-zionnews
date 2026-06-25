@@ -11,7 +11,7 @@ export async function getArticles(statusFilter = null) {
     .select(`
       id, title, slug, status, created_at, published_at, breaking_news, views,
       featured_image, category_id, author_id,
-      seo_title, seo_description, meta_keywords, meta_image,
+      seo_title, seo_description, meta_image,
       profiles (full_name),
       categories (name),
       comments (id, comment, email, created_at)
@@ -24,8 +24,15 @@ export async function getArticles(statusFilter = null) {
 
   const { data, error } = await query;
   if (error) throw error;
-  return data;
+
+  const articles = data.map(article => ({
+    ...article,
+    meta_image: article.meta_image || article.featured_image
+  }));
+
+  return articles;
 }
+
 
 /**
  * Creates an article and maps its many-to-many relationship tags
