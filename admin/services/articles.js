@@ -5,7 +5,7 @@ import { supabase } from './supabase.js';
  * Includes new fields from migration schema: breaking_news, view, meta_* fields, etc.
  * NOW ALSO includes comments for real-time dashboard display
  */
-async function getArticles(statusFilter = null) {
+export async function updateArticle(articleId, articleUpdates, tagIds = []) {
   // Build the query – identical select / join to your original
   let query = supabase
     .from('articles')
