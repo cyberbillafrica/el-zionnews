@@ -173,312 +173,348 @@
 <body>
 
   <!-- ===== NAVBAR ===== -->
-  <nav class="navbar navbar-dark sticky-top main-header p-3 shadow-sm">
-    <div class="container-fluid position-relative mobile-nav">
-      <button class="navbar-toggler d-md-none me-2" type="button" id="mobileMenuToggle">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <a class="navbar-brand navbar-brand-custom fw-extrabold text-white fs-4 brand-center" href="#">
-        EL-ZION <span>NEWS</span>
-      </a>
-      <div class="d-flex align-items-center gap-3 logout-area">
-        <span class="text-light small d-none d-sm-inline" id="userEmail">Loading Profile...</span>
-        
-      </div>
-    </div>
-  </nav>
-
-  <!-- ===== MAIN LAYOUT ===== -->
-  <div class="container-fluid">
-    <div class="row">
-
-      <!-- ===== SIDEBAR ===== -->
-      <nav class="col-md-3 col-lg-2 sidebar-panel p-3" id="sidebarMenu">
-        <div class="d-flex flex-column h-100 justify-content-between">
-          <div>
-            <div class="text-uppercase tracking-wider small fw-bold text-muted mb-3 px-2">Control Panel</div>
-            <a class="nav-link-custom active" href="#" data-section="dashboard"><i class="bi bi-speedometer2"></i> Analytics Hub</a>
-            <a class="nav-link-custom" href="#" data-section="composer"><i class="bi bi-feather"></i> Write Article</a>
-            <a class="nav-link-custom" href="#" data-section="articles"><i class="bi bi-newspaper"></i> Review Desk</a>
-            <a class="nav-link-custom" href="#" data-section="comments"><i class="bi bi-chat-left-text"></i> Comments Desk</a>
-            <a class="nav-link-custom" href="#" data-click="staff"><i class="bi bi-people me-2"></i> Staff Management</a>
-          </div> 
-
-          <button id="logoutBtn" class="btn btn-outline-light text-danger btn-sm d-flex align-items-center gap-2 px-3 border-secondary">
-          <span>Logout</span>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 17 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0v2z"/>
-            <path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/>
-          </svg>
-        </button>
-      </div>
-          <div class="p-2 bg-grey border rounded text-center small text-muted"><i class="bi bi-shield-check gold-accent"></i> Super Admin</div>
-        </div>
-      </nav>
-
-      <!-- ===== MAIN CONTENT ===== -->
-      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
-
-        <!-- ============================================================ -->
-        <!--  DASHBOARD  -->
-        <!-- ============================================================ -->
-        <div id="dashboard" class="section-view active">
-          <div class="premium-badge mb-4">
-            <div>
-              <h4 class="mb-1 text-light fw-bold" id="adminWelcome">
-                Welcome back, <span id="adminNameDisplay">Admin</span>
-              </h4>
-              <hr>
-              <p class="mb-1" style="color: red; font-weight: bold; font-style: italic;">
-                 Admin Office Space
-              </p>
-         </div>
-            <i class="bi bi-award-fill fs-2 gold-accent"></i>
-          </div>
-
-          <!-- Metric Cards – clickable -->
-          <div class="row g-3 mb-4">
-            <div class="col-6 col-lg-3">
-              <div class="metric-card card-admin p-4" data-click="articles">
-                <i class="bi bi-file-earmark-text card-icon"></i>
-                <h6 class="text-muted small text-uppercase">Total Articles</h6>
-                <h2 class="fw-bold mb-0" id="totalArticles">0</h2>
-              </div>
-            </div>
-            <div class="col-6 col-lg-3">
-              <div class="metric-card card-live p-4" data-click="articles?status=published">
-                <i class="bi bi-globe2 card-icon"></i>
-                <h6 class="text-muted small text-uppercase">Published</h6>
-                <h2 class="fw-bold mb-0" id="publishedCount">0</h2>
-              </div>
-            </div>
-            <div class="col-6 col-lg-3">
-              <div class="metric-card card-queue p-4" data-click="articles?status=draft">
-                <i class="bi bi-pencil-square card-icon"></i>
-                <h6 class="text-muted small text-uppercase">Draft Articles</h6>
-                <h2 class="fw-bold mb-0" id="draftCount">0</h2>
-              </div>
-            </div>
-            <div class="col-6 col-lg-3">
-              <div class="metric-card card-comments p-4" data-click="comments">
-                <i class="bi bi-chat-dots card-icon"></i>
-                <h6 class="text-muted small text-uppercase">All Comments</h6>
-                <h2 class="fw-bold mb-0" id="totalComments">0</h2>
-              </div>
-            </div>
-
-            <div class="col-6 col-lg-3">
-            <div class="metric-card card-staff p-4" onclick="switchSection('staff')">
-            </div>   <i class="bi bi-people card-icon"></i>
-              <h6 class="text-muted small text-uppercase">Total Staff</h6>
-              <h2 class="fw-bold mb-0" id="totalStaff">0</h2> 
-            </div>
-          </div>
-          </div>
-        </div>
-
-        <!-- ============================================================ -->
-        <!--  COMPOSER  -->
-        <!-- ============================================================ -->
-        <div id="composer" class="section-view">
-          <div class="card border-0 shadow-sm p-4 rounded-4 mb-4">
-            <h4 class="fw-bold mb-3 border-bottom pb-2 text-dark"><i class="bi bi-vector-pen text-danger"></i> Express Admin Composer</h4>
-            <form id="adminArticleForm">
-              <div class="mb-3">
-                <label class="form-label small fw-bold">News Headline Title</label>
-                <input type="text" id="compTitle" class="form-control form-control-lg" required placeholder="Headline...">
-              </div>
-              <div class="row mb-3 g-3">
-                <div class="col-md-6">
-                  <label class="form-label small fw-bold">Select News Category</label>
-                  <select id="compCategorySelect" class="form-select" required></select>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label small fw-bold">Upload Featured Image</label>
-                  <input type="file" id="compImageFile" class="form-control" accept="image/*">
-                </div>
-              </div>
-              <div class="mb-3">
-                <label class="form-label small fw-bold">Article Excerpt</label>
-                <input type="text" id="compExcerpt" class="form-control" placeholder="Brief summary...">
-              </div>
-              <div class="mb-3">
-                <label class="form-label small fw-bold">News Content Details</label>
-                <textarea id="compBody" class="form-control" rows="8" required></textarea>
-              </div>
-              <!-- SEO -->
-              <div class="bg-light p-3 rounded-3 mb-3 border">
-                <h6 class="fw-bold text-dark mb-2"><i class="bi bi-search text-primary"></i> Search Engine Optimization (SEO)</h6>
-                <div class="mb-2">
-                  <label class="small fw-semibold text-muted">SEO Meta Title</label>
-                  <input type="text" id="compSeoTitle" class="form-control form-control-sm" placeholder="Meta title for Google...">
-                </div>
-                <div>
-                  <label class="small fw-semibold text-muted">SEO Meta Description</label>
-                  <textarea id="compSeoDesc" class="form-control form-control-sm" rows="2" placeholder="Meta description context..."></textarea>
-                </div>
-              </div>
-              <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3 mb-3">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="compBreaking">
-                  <label class="form-check-label text-danger fw-bold" for="compBreaking">Breaking News</label>
-                </div>
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="compFeatured">
-                  <label class="form-check-label text-dark fw-bold" for="compFeatured">Feature on Grid</label>
-                </div>
-              </div>
-              <div class="d-flex gap-2 justify-content-end">
-                <button type="button" class="btn btn-secondary px-4" onclick="submitAdminArticle('draft')">Save Draft</button>
-                <button type="button" class="btn btn-danger px-4" onclick="submitAdminArticle('published')">Instant Live Publish</button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <!-- ============================================================ -->
-        <!--  REVIEW DESK (now shows drafts)  -->
-        <!-- ============================================================ -->
-        <div id="articles" class="section-view">
-          <h4 class="fw-bold mb-4">Master Editorial Desk</h4>
-          <div id="articlesList" class="row g-3"></div>
-        </div>
-
-        <!-- ============================================================ -->
-        <!--  COMMENTS DESK  -->
-        <!-- ============================================================ -->
-        <div id="comments" class="section-view">
-          <h4 class="fw-bold mb-4"><i class="bi bi-chat-square-text text-danger"></i> Reader Comments Management Desk</h4>
-          <!-- Desktop table -->
-          <div class="card border-0 shadow-sm p-3 p-md-4 rounded-3 comment-desktop-table">
-            <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th>Article</th>
-                    <th>User</th>
-                    <th>Comment</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="commentsTableBody">
-                  <tr><td colspan="5" class="text-muted p-3 text-center">Loading comments queue…</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <!-- Mobile cards -->
-          <div class="comment-mobile-cards" id="commentsMobileContainer">
-            <p class="text-muted small mb-3">Loading comments…</p>
-          </div>
-        </div>
-
-        <!-- ============================================================ -->
-        <!--  STAFF INVITE  -->
-        <!-- ============================================================ -->
-        
-        <div id="staff" class="section-view">
-  
-  <div class="row g-4 mb-4">
-    <div class="col-md-5">
-      <div class="card border-0 shadow-sm p-4 rounded-4">
-        <h4 class="fw-bold mb-2 text-dark">
-          <i class="bi bi-ticket-perforated-fill text-danger"></i> Mint Staff Invite Code
-        </h4>
-        <p class="text-muted small">Generate a token to hand over to your new staff member for their registration bypass.</p>
-        <form id="codeGeneratorForm">
-          <div class="mb-3">
-            <label class="form-label small fw-bold">Intended Staff Role</label>
-            <select id="inviteRole" class="form-select" required>
-              <option value="super admin">Super Admin (Full Portal Control & Staff Ban privilege)</option>
-              <option value="admin">Admin (Co-Manager access)</option>
-              <option value="editor">Editor (Direct Live Publish Control)</option>
-              <option value="author">Author (Standard Draft Writer)</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-danger w-100 fw-bold">Generate Code Asset</button>
-        </form>
-      </div>
-    </div>
+<nav class="navbar navbar-dark sticky-top main-header p-3 shadow-sm bg-dark">
+  <div class="container-fluid position-relative mobile-nav">
+    <button class="navbar-toggler d-md-none me-2" type="button" id="mobileMenuToggle">
+      <span class="navbar-toggler-icon"></span>
+    </button>
     
-    <div class="col-md-7">
-      <div class="card border-0 shadow-sm p-4 rounded-4">
-        <h5 class="fw-bold mb-3">Unused Registry Codes</h5>
-        <div class="table-responsive">
-          <table class="table align-middle">
-            <thead>
-              <tr><th>Token Code</th><th>Assigned Role</th><th>Action</th></tr>
-            </thead>
-            <tbody id="codesTableBody">
-              <tr><td colspan="3" class="text-muted small text-center">No active codes generated.</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+    <a class="navbar-brand navbar-brand-custom fw-extrabold text-white fs-4 brand-center" href="#">
+      EL-ZION <span class="text-danger">NEWS</span>
+    </a>
+
+    <div class="d-flex align-items-center gap-3 logout-area">
+      <span class="text-light small d-none d-sm-inline" id="userEmail">Loading Profile...</span>
+      <!-- You can add notification bell or avatar here later -->
     </div>
   </div>
+</nav>
 
+<!-- ===== MAIN LAYOUT ===== -->
+<div class="container-fluid">
   <div class="row">
-    <div class="col-12">
-      <div class="card border-0 shadow-sm p-4 rounded-4">
-        <h5 class="fw-bold mb-3 text-dark">
-          <i class="bi bi-shield-lock-fill text-danger me-2"></i>Active Staff Directory & Controls
-        </h5>
-        <p class="text-muted small">Only accounts with the <strong>Super Admin</strong> role can suspend or terminate user accounts from the portal.</p>
-        <div class="table-responsive">
-          <table class="table align-middle table-hover">
-            <thead class="table-light">
-              <tr>
-                <th>Staff Name</th>
-                <th>Assigned System Role</th>
-                <th>Access Status</th>
-                <th class="text-end">Administrative Actions</th>
-              </tr>
-            </thead>
-            <tbody id="staffTableBody">
-              <tr><td colspan="4" class="text-muted small text-center">Loading staff records...</td></tr>
-            </tbody>
-          </table>
+
+    <!-- ===== SIDEBAR ===== -->
+    <nav class="col-md-3 col-lg-2 sidebar-panel p-3 bg-dark text-white" id="sidebarMenu">
+      <div class="d-flex flex-column h-100 justify-content-between">
+        <div>
+          <div class="text-uppercase tracking-wider small fw-bold text-muted mb-3 px-2">Control Panel</div>
+          
+          <a class="nav-link-custom active" href="#" data-section="dashboard">
+            <i class="bi bi-speedometer2 me-2"></i> Analytics Hub
+          </a>
+          <a class="nav-link-custom" href="#" data-section="composer">
+            <i class="bi bi-feather me-2"></i> Write Article
+          </a>
+          <a class="nav-link-custom" href="#" data-section="articles">
+            <i class="bi bi-newspaper me-2"></i> Review Desk
+          </a>
+          <a class="nav-link-custom" href="#" data-section="comments">
+            <i class="bi bi-chat-left-text me-2"></i> Comments Desk
+          </a>
+          <a class="nav-link-custom" href="#" data-section="staff">
+            <i class="bi bi-people me-2"></i> Staff Management
+          </a>
+        </div> 
+
+        <div class="mt-auto">
+          <button id="logoutBtn" class="btn btn-outline-light text-danger btn-sm d-flex align-items-center gap-2 px-3 border-secondary w-100">
+            <span>Logout</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 17 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0v2z"/>
+              <path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/>
+            </svg>
+          </button>
+          
+          <div class="p-2 bg-dark border border-secondary rounded text-center small text-muted mt-3">
+            <i class="bi bi-shield-check gold-accent"></i> Super Admin
+          </div>
         </div>
       </div>
-    </div>
+    </nav>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+
+      <!-- ============================================================ -->
+      <!--  DASHBOARD  -->
+      <!-- ============================================================ -->
+      <div id="dashboard" class="section-view active">
+        <div class="premium-badge mb-4 d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="mb-1 text-light fw-bold" id="adminWelcome">
+              Welcome back, <span id="adminNameDisplay">Admin</span>
+            </h4>
+            <p class="mb-0 text-danger fw-bold fst-italic">Admin Office Space</p>
+          </div>
+          <i class="bi bi-award-fill fs-2 gold-accent"></i>
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-lg-3">
+            <div class="metric-card card-admin p-4" data-section="articles" style="cursor: pointer;">
+              <i class="bi bi-file-earmark-text card-icon"></i>
+              <h6 class="text-muted small text-uppercase">Total Articles</h6>
+              <h2 class="fw-bold mb-0" id="totalArticles">0</h2>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="metric-card card-live p-4" data-section="articles" data-status="published" style="cursor: pointer;">
+              <i class="bi bi-globe2 card-icon"></i>
+              <h6 class="text-muted small text-uppercase">Published</h6>
+              <h2 class="fw-bold mb-0" id="publishedCount">0</h2>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="metric-card card-queue p-4" data-section="articles" data-status="draft" style="cursor: pointer;">
+              <i class="bi bi-pencil-square card-icon"></i>
+              <h6 class="text-muted small text-uppercase">Draft Articles</h6>
+              <h2 class="fw-bold mb-0" id="draftCount">0</h2>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="metric-card card-comments p-4" data-section="comments" style="cursor: pointer;">
+              <i class="bi bi-chat-dots card-icon"></i>
+              <h6 class="text-muted small text-uppercase">All Comments</h6>
+              <h2 class="fw-bold mb-0" id="totalComments">0</h2>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="metric-card card-staff p-4" data-section="staff" style="cursor: pointer;">
+              <i class="bi bi-people card-icon"></i>
+              <h6 class="text-muted small text-uppercase">Total Staff</h6>
+              <h2 class="fw-bold mb-0" id="totalStaff">0</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!--  COMPOSER  -->
+      <!-- ============================================================ -->
+      <div id="composer" class="section-view">
+        <div class="card border-0 shadow-sm p-4 rounded-4 mb-4">
+          <h4 class="fw-bold mb-3 border-bottom pb-2 text-dark">
+            <i class="bi bi-vector-pen text-danger"></i> Express Admin Composer
+          </h4>
+          <form id="adminArticleForm">
+            <!-- Form fields remain the same (cleaned spacing) -->
+            <div class="mb-3">
+              <label class="form-label small fw-bold">News Headline Title</label>
+              <input type="text" id="compTitle" class="form-control form-control-lg" required placeholder="Headline...">
+            </div>
+            <div class="row mb-3 g-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Select News Category</label>
+                <select id="compCategorySelect" class="form-select" required></select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Upload Featured Image</label>
+                <input type="file" id="compImageFile" class="form-control" accept="image/*">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Article Excerpt</label>
+              <input type="text" id="compExcerpt" class="form-control" placeholder="Brief summary...">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">News Content Details</label>
+              <textarea id="compBody" class="form-control" rows="8" required></textarea>
+            </div>
+
+            <!-- SEO Section -->
+            <div class="bg-light p-3 rounded-3 mb-3 border">
+              <h6 class="fw-bold text-dark mb-2"><i class="bi bi-search text-primary"></i> Search Engine Optimization (SEO)</h6>
+              <div class="mb-2">
+                <label class="small fw-semibold text-muted">SEO Meta Title</label>
+                <input type="text" id="compSeoTitle" class="form-control form-control-sm" placeholder="Meta title for Google...">
+              </div>
+              <div>
+                <label class="small fw-semibold text-muted">SEO Meta Description</label>
+                <textarea id="compSeoDesc" class="form-control form-control-sm" rows="2" placeholder="Meta description context..."></textarea>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3 mb-3">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="compBreaking">
+                <label class="form-check-label text-danger fw-bold" for="compBreaking">Breaking News</label>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="compFeatured">
+                <label class="form-check-label text-dark fw-bold" for="compFeatured">Feature on Grid</label>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2 justify-content-end">
+              <button type="button" class="btn btn-secondary px-4" onclick="submitAdminArticle('draft')">Save Draft</button>
+              <button type="button" class="btn btn-danger px-4" onclick="submitAdminArticle('published')">Instant Live Publish</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!--  REVIEW DESK  -->
+      <!-- ============================================================ -->
+      <div id="articles" class="section-view">
+        <h4 class="fw-bold mb-4">Master Editorial Desk</h4>
+        <div id="articlesList" class="row g-3"></div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!--  COMMENTS DESK  -->
+      <!-- ============================================================ -->
+      <div id="comments" class="section-view">
+        <h4 class="fw-bold mb-4"><i class="bi bi-chat-square-text text-danger"></i> Reader Comments Management Desk</h4>
+        <!-- Desktop Table -->
+        <div class="card border-0 shadow-sm p-3 p-md-4 rounded-3 comment-desktop-table">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Article</th>
+                  <th>User</th>
+                  <th>Comment</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="commentsTableBody">
+                <tr><td colspan="5" class="text-muted p-3 text-center">Loading comments queue…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Mobile Cards -->
+        <div class="comment-mobile-cards" id="commentsMobileContainer">
+          <p class="text-muted small mb-3">Loading comments…</p>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!--  STAFF MANAGEMENT  -->
+      <!-- ============================================================ -->
+      <div id="staff" class="section-view">
+        <div class="row g-4 mb-4">
+          <!-- Invite Code Generator -->
+          <div class="col-md-5">
+            <div class="card border-0 shadow-sm p-4 rounded-4">
+              <h4 class="fw-bold mb-2 text-dark">
+                <i class="bi bi-ticket-perforated-fill text-danger"></i> Mint Staff Invite Code
+              </h4>
+              <p class="text-muted small">Generate a token for new staff registration bypass.</p>
+              <form id="codeGeneratorForm">
+                <div class="mb-3">
+                  <label class="form-label small fw-bold">Intended Staff Role</label>
+                  <select id="inviteRole" class="form-select" required>
+                    <option value="super admin">Super Admin (Full Control)</option>
+                    <option value="admin">Admin (Co-Manager)</option>
+                    <option value="editor">Editor (Live Publish)</option>
+                    <option value="author">Author (Draft Writer)</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn btn-danger w-100 fw-bold">Generate Code Asset</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Unused Codes -->
+          <div class="col-md-7">
+            <div class="card border-0 shadow-sm p-4 rounded-4">
+              <h5 class="fw-bold mb-3">Unused Registry Codes</h5>
+              <div class="table-responsive">
+                <table class="table align-middle">
+                  <thead>
+                    <tr><th>Token Code</th><th>Assigned Role</th><th>Action</th></tr>
+                  </thead>
+                  <tbody id="codesTableBody">
+                    <tr><td colspan="3" class="text-muted small text-center">No active codes generated.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Staff Directory -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card border-0 shadow-sm p-4 rounded-4">
+              <h5 class="fw-bold mb-3 text-dark">
+                <i class="bi bi-shield-lock-fill text-danger me-2"></i> Active Staff Directory & Controls
+              </h5>
+              <p class="text-muted small">Only <strong>Super Admin</strong> can suspend or terminate accounts.</p>
+              <div class="table-responsive">
+                <table class="table align-middle table-hover">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Staff Name</th>
+                      <th>Assigned System Role</th>
+                      <th>Access Status</th>
+                      <th class="text-end">Administrative Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="staffTableBody">
+                    <tr><td colspan="4" class="text-muted small text-center">Loading staff records...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== EDIT MODAL ===== -->
+      <div class="modal fade" id="articleModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-dark text-white p-4">
+              <h5 class="modal-title fw-bold"><i class="bi bi-shield-check text-danger"></i> Review Audit Protocol</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+              <div class="mb-3">
+                <label class="form-label fw-bold small">Modified Title</label>
+                <input type="text" id="editTitle" class="form-control">
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-bold small">Content Copy</label>
+                <textarea id="editBody" class="form-control" rows="6"></textarea>
+              </div>
+              <div class="row g-2 bg-light p-3 rounded mb-3 border">
+                <div class="col-md-6">
+                  <label class="small fw-bold">SEO Title</label>
+                  <input type="text" id="editSeoTitle" class="form-control form-control-sm">
+                </div>
+                <div class="col-md-6">
+                  <label class="small fw-bold">SEO Description</label>
+                  <input type="text" id="editSeoDesc" class="form-control form-control-sm">
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-bold small">Deployment Lifecycle Status</label>
+                <select id="editStatus" class="form-select">
+                  <option value="draft">Draft</option>
+                  <option value="published">Published (Live Public)</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between p-4 bg-light">
+              <button type="button" id="deleteArticleBtn" class="btn btn-outline-danger fw-semibold">Purge Asset</button>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                <button type="button" id="saveArticleBtn" class="btn btn-danger px-4">Save Verification</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
   </div>
 </div>
-
-  <!-- ===== EDIT MODAL ===== -->
-  <div class="modal fade" id="articleModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-        <div class="modal-header bg-dark text-white p-4">
-          <h5 class="modal-title fw-bold"><i class="bi bi-shield-check text-danger"></i> Review Audit Protocol</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body p-4">
-          <div class="mb-3"><label class="form-label fw-bold small">Modified Title</label><input type="text" id="editTitle" class="form-control"></div>
-          <div class="mb-3"><label class="form-label fw-bold small">Content Copy</label><textarea id="editBody" class="form-control" rows="6"></textarea></div>
-          <div class="row g-2 bg-light p-3 rounded mb-3 border">
-            <div class="col-md-6"><label class="small fw-bold">SEO Title</label><input type="text" id="editSeoTitle" class="form-control form-control-sm"></div>
-            <div class="col-md-6"><label class="small fw-bold">SEO Description</label><input type="text" id="editSeoDesc" class="form-control form-control-sm"></div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label fw-bold small">Deployment Lifecycle Status</label>
-            <select id="editStatus" class="form-select">
-              <option value="draft">Draft</option>
-              <option value="published">Published (Live Public)</option>
-            </select>
-          </div>
-        </div>
-        <div class="modal-footer d-flex justify-content-between p-4 bg-light">
-          <button type="button" id="deleteArticleBtn" class="btn btn-outline-danger fw-semibold">Purge Asset</button>
-          <div class="d-flex gap-2">
-            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
-            <button type="button" id="saveArticleBtn" class="btn btn-danger px-4">Save Verification</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- ===== SCRIPTS ===== -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
