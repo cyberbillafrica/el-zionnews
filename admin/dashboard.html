@@ -69,6 +69,8 @@
     .card-live { border-bottom-color: var(--ez-gold); }
     .card-queue { border-bottom-color: var(--ez-dark); }
     .card-comments { border-bottom-color: #0d6efd; }
+    .card-staff { border-bottom-color: #28a745; }
+
 
     .section-view { display: none; }
     .section-view.active { display: block; animation: fadeIn 0.3s; }
@@ -212,7 +214,7 @@
               <h4 class="mb-1 text-light fw-bold" id="adminWelcome">
                 Welcome back, <span id="adminNameDisplay">Admin</span>
               </h4>
-              <p class="mb-0 text-muted small">System operational.</p>
+              <p class="mb-0 text-light text-muted small">System operational.</p>
             </div>
             <i class="bi bi-award-fill fs-2 gold-accent"></i>
           </div>
@@ -222,29 +224,37 @@
             <div class="col-6 col-lg-3">
               <div class="metric-card card-admin p-4" data-click="articles">
                 <i class="bi bi-file-earmark-text card-icon"></i>
-                <h6 class="text-muted small text-uppercase">Total Assets</h6>
+                <h6 class="text-muted small text-uppercase">Total Articles</h6>
                 <h2 class="fw-bold mb-0" id="totalArticles">0</h2>
               </div>
             </div>
             <div class="col-6 col-lg-3">
               <div class="metric-card card-live p-4" data-click="articles?status=published">
                 <i class="bi bi-globe2 card-icon"></i>
-                <h6 class="text-muted small text-uppercase">Live Public</h6>
+                <h6 class="text-muted small text-uppercase">Published Articles</h6>
                 <h2 class="fw-bold mb-0" id="publishedCount">0</h2>
               </div>
             </div>
             <div class="col-6 col-lg-3">
               <div class="metric-card card-queue p-4" data-click="articles?status=draft">
                 <i class="bi bi-pencil-square card-icon"></i>
-                <h6 class="text-muted small text-uppercase">Drafts</h6>
+                <h6 class="text-muted small text-uppercase">Draft Articles</h6>
                 <h2 class="fw-bold mb-0" id="draftCount">0</h2>
               </div>
             </div>
             <div class="col-6 col-lg-3">
               <div class="metric-card card-comments p-4" data-click="comments">
                 <i class="bi bi-chat-dots card-icon"></i>
-                <h6 class="text-muted small text-uppercase">Comments</h6>
+                <h6 class="text-muted small text-uppercase">Total Comments</h6>
                 <h2 class="fw-bold mb-0" id="totalComments">0</h2>
+              </div>
+            </div>
+
+            <div class="col-6 col-lg-3">
+              <div class="metric-card card-live p-4" data-click="articles?status=published">
+                <i class="bi bi-globe2 card-icon"></i>
+                <h6 class="text-muted small text-uppercase">Total Staff</h6>
+                <h2 class="fw-bold mb-0" id="publishedCount">0</h2>
               </div>
             </div>
           </div>
