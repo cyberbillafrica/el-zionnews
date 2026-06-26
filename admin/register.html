@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <title>Staff Enrollment Portal - El Zion News</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"> <!-- Added for eye icons -->
   <style>
     body { background-color: #1a1d20; height: 100vh; display: flex; align-items: center; justify-content: center; }
     .auth-card { background: white; border-radius: 16px; padding: 2.5rem; width: 100%; max-width: 440px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
@@ -36,15 +37,14 @@
       </div>
       
       <div class="mb-4 position-relative">
-  <label class="form-label small fw-bold">Create Security Password</label>
-  <input type="password" id="password" class="form-control" required placeholder="••••••••">
-  
-  <!-- Eye icon button -->
+        <label class="form-label small fw-bold">Create Security Password</label>
+        <input type="password" id="password" class="form-control" required placeholder="••••••••">
+        <!-- Eye icon button -->
         <button type="button" id="togglePassword" 
           class="btn btn-sm btn-outline-secondary position-absolute" 
           style="top: 50%; right: 10px; transform: translateY(-50%);">
-        <i class="fa fa-eye"></i>
-       </button>
+          <i class="fa fa-eye"></i>
+        </button>
       </div>
 
       <button type="submit" class="btn btn-danger w-100 fw-bold py-2">Complete Profile Activation</button>
@@ -55,17 +55,29 @@
   <script type="module">
     import { supabase } from './services/supabase.js';
 
+    const passwordInput = document.getElementById('password');
+    const togglePassword = document.getElementById('togglePassword');
+
+    // ✅ FIXED: toggle works correctly now
+    togglePassword.addEventListener('click', function () {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+
+      // Toggle icon
+      this.innerHTML = type === 'password' 
+        ? '<i class="fa fa-eye"></i>' 
+        : '<i class="fa fa-eye-slash"></i>';
+    });
+
     document.getElementById('registerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const codeInput = document.getElementById('invitationCode').value.trim();
       const fullNameInput = document.getElementById('fullName').value.trim();
       const phoneInput = document.getElementById('phone').value.trim();
       const emailInput = document.getElementById('email').value.trim();
-      const passwordInput = document.getElementById('password').value;
-      const togglePassword = document.getElementById('togglePassword');
+      const passwordValue = passwordInput.value;
 
-
-      // 1. Fetch using your exact schema criteria
+      // 1. Validate invitation code
       const { data: invite, error: inviteError } = await supabase
         .from('invitation_codes')
         .select('*')
@@ -83,24 +95,10 @@
         return;
       }
 
-
- 
-        togglePassword.addEventListener('click', function () {
-        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', type);
-
-        // Toggle icon
-        this.innerHTML = type === 'password' 
-          ? '<i class="fa fa-eye"></i>' 
-          : '<i class="fa fa-eye-slash"></i>';
-      });
-
-
-      
-      // 2. Register user credentials safely with rich user metadata
+      // 2. Register user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: emailInput,
-        password: passwordInput,
+        password: passwordValue,
         options: { 
           data: { 
             role: invite.role,
@@ -118,7 +116,7 @@
       const newUser = authData.user;
 
       if (newUser) {
-        // 3. Update verification token tracking counters inside your schema
+        // 3. Update invitation usage
         const nextUsageCount = (invite.uses || 0) + 1;
         const shouldKeepActive = invite.max_uses ? (nextUsageCount < invite.max_uses) : false;
         
@@ -130,15 +128,15 @@
           })
           .eq('id', invite.id);
 
-        // 4. Create or sync your companion user profile layout mapping without missing fields!
+        // 4. Insert profile
         const { error: profileError } = await supabase
           .from('profiles')
           .insert([{ 
             id: newUser.id, 
             email: emailInput, 
             role: invite.role,
-            full_name: fullNameInput, // Saved cleanly to your profiles schema
-            phone: phoneInput         // Saved cleanly to your profiles schema
+            full_name: fullNameInput,
+            phone: phoneInput
           }]);
 
         if (profileError) {

@@ -195,13 +195,16 @@
       <!-- ===== SIDEBAR ===== -->
       <nav class="col-md-3 col-lg-2 sidebar-panel p-3" id="sidebarMenu">
         <div class="d-flex flex-column h-100 justify-content-between">
-          <div>
+          <di>
             <div class="text-uppercase tracking-wider small fw-bold text-muted mb-3 px-2">Control Panel</div>
             <a class="nav-link-custom active" href="#" data-section="dashboard"><i class="bi bi-speedometer2"></i> Analytics Hub</a>
             <a class="nav-link-custom" href="#" data-section="composer"><i class="bi bi-feather"></i> Write Article</a>
             <a class="nav-link-custom" href="#" data-section="articles"><i class="bi bi-newspaper"></i> Review Desk</a>
             <a class="nav-link-custom" href="#" data-section="comments"><i class="bi bi-chat-left-text"></i> Comments Desk</a>
             <a class="nav-link-custom" href="#" data-section="staff"><i class="bi bi-people"></i> Invite Staff</a>
+            <a class="nav-link-custom" href="#" data-click="staff"><i class="bi bi-people me-2"></i> Staff Management</a>
+          
+
           <button id="logoutBtn" class="btn btn-outline-light text-danger btn-sm d-flex align-items-center gap-2 px-3 border-secondary">
           <span>Logout</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -266,8 +269,8 @@
             </div>
 
             <div class="col-6 col-lg-3">
-            <div class="metric-card card-staff p-4" data-click="profiles">
-              <i class="bi bi-people card-icon"></i>
+            <div class="metric-card card-staff p-4" onclick="switchSection('staff')">
+            </div>   <i class="bi bi-people card-icon"></i>
               <h6 class="text-muted small text-uppercase">Total Staff</h6>
               <h2 class="fw-bold mb-0" id="totalStaff">0</h2> 
             </div>
@@ -375,44 +378,74 @@
         <!-- ============================================================ -->
         <!--  STAFF INVITE  -->
         <!-- ============================================================ -->
+        
         <div id="staff" class="section-view">
-          <div class="row g-4">
-            <div class="col-md-5">
-              <div class="card border-0 shadow-sm p-4 rounded-4">
-                <h4 class="fw-bold mb-2 text-dark"><i class="bi bi-ticket-perforated-fill text-danger"></i> Mint Staff Invite Code</h4>
-                <p class="text-muted small">Generate a token to hand over to your new staff member for their registration bypass.</p>
-                <form id="codeGeneratorForm">
-                  <div class="mb-3">
-                    <label class="form-label small fw-bold">Intended Staff Role</label>
-                    <select id="inviteRole" class="form-select" required>
-                      <option value="admin">Admin (Co-Manager access)</option>
-                      <option value="editor">Editor (Direct Live Publish Control)</option>
-                      <option value="author">Author (Standard Draft Writer)</option>
-                    </select>
-                  </div>
-                  <button type="submit" class="btn btn-danger w-100 fw-bold">Generate Code Asset</button>
-                </form>
-              </div>
-            </div>
-            <div class="col-md-7">
-              <div class="card border-0 shadow-sm p-4 rounded-4">
-                <h5 class="fw-bold mb-3">Unused Registry Codes</h5>
-                <div class="table-responsive">
-                  <table class="table align-middle">
-                    <thead><tr><th>Token Code</th><th>Assigned Role</th><th>Action</th></tr></thead>
-                    <tbody id="codesTableBody">
-                      <tr><td colspan="3" class="text-muted small text-center">No active codes generated.</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
+  
+  <div class="row g-4 mb-4">
+    <div class="col-md-5">
+      <div class="card border-0 shadow-sm p-4 rounded-4">
+        <h4 class="fw-bold mb-2 text-dark">
+          <i class="bi bi-ticket-perforated-fill text-danger"></i> Mint Staff Invite Code
+        </h4>
+        <p class="text-muted small">Generate a token to hand over to your new staff member for their registration bypass.</p>
+        <form id="codeGeneratorForm">
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Intended Staff Role</label>
+            <select id="inviteRole" class="form-select" required>
+              <option value="super admin">Super Admin (Full Portal Control & Staff Ban privilege)</option>
+              <option value="admin">Admin (Co-Manager access)</option>
+              <option value="editor">Editor (Direct Live Publish Control)</option>
+              <option value="author">Author (Standard Draft Writer)</option>
+            </select>
           </div>
+          <button type="submit" class="btn btn-danger w-100 fw-bold">Generate Code Asset</button>
+        </form>
+      </div>
+    </div>
+    
+    <div class="col-md-7">
+      <div class="card border-0 shadow-sm p-4 rounded-4">
+        <h5 class="fw-bold mb-3">Unused Registry Codes</h5>
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr><th>Token Code</th><th>Assigned Role</th><th>Action</th></tr>
+            </thead>
+            <tbody id="codesTableBody">
+              <tr><td colspan="3" class="text-muted small text-center">No active codes generated.</td></tr>
+            </tbody>
+          </table>
         </div>
-
-      </main>
+      </div>
     </div>
   </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm p-4 rounded-4">
+        <h5 class="fw-bold mb-3 text-dark">
+          <i class="bi bi-shield-lock-fill text-danger me-2"></i>Active Staff Directory & Controls
+        </h5>
+        <p class="text-muted small">Only accounts with the <strong>Super Admin</strong> role can suspend or terminate user accounts from the portal.</p>
+        <div class="table-responsive">
+          <table class="table align-middle table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>Staff Name</th>
+                <th>Assigned System Role</th>
+                <th>Access Status</th>
+                <th class="text-end">Administrative Actions</th>
+              </tr>
+            </thead>
+            <tbody id="staffTableBody">
+              <tr><td colspan="4" class="text-muted small text-center">Loading staff records...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
   <!-- ===== EDIT MODAL ===== -->
   <div class="modal fade" id="articleModal" tabindex="-1" aria-hidden="true">
@@ -501,23 +534,101 @@
     //  NAVIGATION
     // ----------------------------------------------
     function switchSection(section, params) {
-      document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
-      const target = document.getElementById(section);
-      if (target) target.classList.add('active');
+    document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById(section);
+    if (target) target.classList.add('active');
 
-      document.querySelectorAll('[data-section]').forEach(l => {
-        l.classList.remove('active');
-        if (l.dataset.section === section) l.classList.add('active');
-      });
+    document.querySelectorAll('[data-section]').forEach(l => {
+      l.classList.remove('active');
+      if (l.dataset.section === section) l.classList.add('active');
+    });
 
-      sideMenu.classList.remove('show');
+    sideMenu.classList.remove('show');
 
-      if (section === 'articles') renderArticlesList();
-      if (section === 'comments') renderCommentsQueue();
-      if (section === 'staff') renderInvitationCodes();
+    if (section === 'articles') renderArticlesList();
+    if (section === 'comments') renderCommentsQueue();
+    
+    // UPDATED: If they open staff, load both invitation codes AND the active roster directory
+    if (section === 'staff') {
+      renderInvitationCodes();
+      renderStaffDirectory(); 
     }
-    window.switchSection = switchSection;
+  }
+  window.switchSection = switchSection;
 
+
+
+    async function renderStaffDirectory() {
+    const { data: staff, error } = await supabase
+      .from('profiles')
+      .select('id, full_name, role, is_suspended');
+
+    if (error) return console.error("Failed to load directory:", error);
+
+    const tbody = document.getElementById('staffTableBody');
+    tbody.innerHTML = '';
+
+    // Determine if the person logged in right now has super admin authorization
+    const isSuperAdmin = currentUser?.role === 'super admin' || (await checkSuperAdminStatus());
+
+    staff.forEach(member => {
+      const isSuspended = member.is_suspended;
+      const badgeClass = isSuspended ? 'bg-danger' : 'bg-success';
+      const badgeText = isSuspended ? 'Suspended' : 'Active';
+      const toggleAction = isSuspended ? 'unsuspend' : 'suspend';
+      const toggleBtnText = isSuspended ? 'Unsuspend' : 'Suspend';
+      const toggleBtnClass = isSuspended ? 'btn-outline-success' : 'btn-outline-warning';
+
+      // Rules: You can't delete/suspend yourself. 
+      // And non-super-admins cannot click the management buttons.
+      const isSelf = member.id === currentUser.id;
+      const isDisabled = (!isSuperAdmin || isSelf) ? 'disabled' : '';
+
+      tbody.innerHTML += `
+        <tr>
+          <td><strong>${member.full_name || 'Pending Onboarding'}</strong></td>
+          <td><span class="badge bg-secondary text-capitalize">${member.role || 'staff'}</span></td>
+          <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+          <td class="text-end">
+            <button class="btn btn-sm ${toggleBtnClass} me-2" 
+              onclick="executeStaffAction('${member.id}', '${toggleAction}')" ${isDisabled}>
+              ${toggleBtnText}
+            </button>
+            <button class="btn btn-sm btn-outline-danger" 
+              onclick="executeStaffAction('${member.id}', 'delete')" ${isDisabled}>
+              Delete
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+  }
+
+      // Secure state helper to double check role
+      async function checkSuperAdminStatus() {
+        const { data } = await supabase.from('profiles').select('role').eq('id', currentUser.id).single();
+        if(data) currentUser.role = data.role; // keep app state synced
+        return data?.role === 'super admin';
+      }
+
+      // Execute DB manipulation actions
+      async function executeStaffAction(userId, action) {
+        if (action === 'delete' && !confirm('Are you absolutely sure you want to delete this staff member? This cannot be undone.')) {
+          return;
+        }
+
+        const { error } = await supabase.rpc('manage_staff_status', {
+          target_user_id: userId,
+          action_type: action
+        });
+
+        if (error) {
+          alert('Action failed: ' + error.message);
+        } else {
+          alert(`Staff successfully updated!`);
+          renderStaffDirectory(); // Reload directory view layout
+        }
+      }
     // ----------------------------------------------
     //  DASHBOARD STATS
     // ----------------------------------------------
