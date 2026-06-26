@@ -34,10 +34,19 @@
         <label class="form-label small fw-bold">Email Address</label>
         <input type="email" id="email" class="form-control" required placeholder="name@elzionnews.com">
       </div>
-      <div class="mb-4">
-        <label class="form-label small fw-bold">Create Security Password</label>
-        <input type="password" id="password" class="form-control" required placeholder="••••••••">
+      
+      <div class="mb-4 position-relative">
+  <label class="form-label small fw-bold">Create Security Password</label>
+  <input type="password" id="password" class="form-control" required placeholder="••••••••">
+  
+  <!-- Eye icon button -->
+        <button type="button" id="togglePassword" 
+          class="btn btn-sm btn-outline-secondary position-absolute" 
+          style="top: 50%; right: 10px; transform: translateY(-50%);">
+        <i class="fa fa-eye"></i>
+       </button>
       </div>
+
       <button type="submit" class="btn btn-danger w-100 fw-bold py-2">Complete Profile Activation</button>
     </form>
     <div class="text-center mt-3"><a href="index.html" class="small text-muted text-decoration-none">Already have a desk account? Login</a></div>
@@ -53,6 +62,8 @@
       const phoneInput = document.getElementById('phone').value.trim();
       const emailInput = document.getElementById('email').value.trim();
       const passwordInput = document.getElementById('password').value;
+      const togglePassword = document.getElementById('togglePassword');
+
 
       // 1. Fetch using your exact schema criteria
       const { data: invite, error: inviteError } = await supabase
@@ -72,6 +83,20 @@
         return;
       }
 
+
+ 
+        togglePassword.addEventListener('click', function () {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+
+        // Toggle icon
+        this.innerHTML = type === 'password' 
+          ? '<i class="fa fa-eye"></i>' 
+          : '<i class="fa fa-eye-slash"></i>';
+      });
+
+
+      
       // 2. Register user credentials safely with rich user metadata
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: emailInput,
