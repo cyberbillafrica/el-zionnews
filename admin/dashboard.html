@@ -183,13 +183,7 @@
       </a>
       <div class="d-flex align-items-center gap-3 logout-area">
         <span class="text-light small d-none d-sm-inline" id="userEmail">Loading Profile...</span>
-        <button id="logoutBtn" class="btn btn-outline-light text-danger btn-sm d-flex align-items-center gap-2 px-3 border-secondary">
-          <span>Logout</span>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 17 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0v2z"/>
-            <path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/>
-          </svg>
-        </button>
+        
       </div>
     </div>
   </nav>
@@ -202,13 +196,20 @@
       <nav class="col-md-3 col-lg-2 sidebar-panel p-3" id="sidebarMenu">
         <div class="d-flex flex-column h-100 justify-content-between">
           <div>
-            <div class="text-uppercase tracking-wider small fw-bold text-muted mb-3 px-2">Control Matrix</div>
+            <div class="text-uppercase tracking-wider small fw-bold text-muted mb-3 px-2">Control Panel</div>
             <a class="nav-link-custom active" href="#" data-section="dashboard"><i class="bi bi-speedometer2"></i> Analytics Hub</a>
             <a class="nav-link-custom" href="#" data-section="composer"><i class="bi bi-feather"></i> Write Article</a>
             <a class="nav-link-custom" href="#" data-section="articles"><i class="bi bi-newspaper"></i> Review Desk</a>
             <a class="nav-link-custom" href="#" data-section="comments"><i class="bi bi-chat-left-text"></i> Comments Desk</a>
             <a class="nav-link-custom" href="#" data-section="staff"><i class="bi bi-people"></i> Invite Staff</a>
-          </div>
+          <button id="logoutBtn" class="btn btn-outline-light text-danger btn-sm d-flex align-items-center gap-2 px-3 border-secondary">
+          <span>Logout</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 17 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0v2z"/>
+            <path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/>
+          </svg>
+        </button>
+      </div>
           <div class="p-2 bg-grey border rounded text-center small text-muted"><i class="bi bi-shield-check gold-accent"></i> Super Admin</div>
         </div>
       </nav>
@@ -225,7 +226,8 @@
               <h4 class="mb-1 text-light fw-bold" id="adminWelcome">
                 Welcome back, <span id="adminNameDisplay">Admin</span>
               </h4>
-              <p class="mb-0" style="color: red; font-weight: bold; font-style: italic;">
+              <hr>
+              <p class="mb-1" style="color: red; font-weight: bold; font-style: italic;">
                  Admin Office Space
               </p>
          </div>
@@ -244,7 +246,7 @@
             <div class="col-6 col-lg-3">
               <div class="metric-card card-live p-4" data-click="articles?status=published">
                 <i class="bi bi-globe2 card-icon"></i>
-                <h6 class="text-muted small text-uppercase">Total Published</h6>
+                <h6 class="text-muted small text-uppercase">Published</h6>
                 <h2 class="fw-bold mb-0" id="publishedCount">0</h2>
               </div>
             </div>
@@ -264,12 +266,12 @@
             </div>
 
             <div class="col-6 col-lg-3">
-              <div class="metric-card card-staff p-4" data-click="articles?status=published">
-                <i class="bi bi-people card-icon"></i>
-                <h6 class="text-muted small text-uppercase">Total Staff</h6>
-                <h2 class="fw-bold mb-0" id="publishedCount">0</h2>
-              </div>
+            <div class="metric-card card-staff p-4" data-click="profiles">
+              <i class="bi bi-people card-icon"></i>
+              <h6 class="text-muted small text-uppercase">Total Staff</h6>
+              <h2 class="fw-bold mb-0" id="totalStaff">0</h2> 
             </div>
+          </div>
           </div>
         </div>
 
@@ -486,6 +488,7 @@
     const publishedCountEl = $('publishedCount');
     const draftCountEl = $('draftCount');
     const totalCommentsEl = $('totalComments');
+    const totalStaffEl = $('totalStaff');
 
     // ----------------------------------------------
     //  MOBILE SIDEBAR TOGGLE
@@ -535,6 +538,19 @@
       if (!error) totalCommentsEl.textContent = count || 0;
       else totalCommentsEl.textContent = '0';
     }
+
+
+    // Staff count (all staff/profiles)
+        const { count: staffCount, error: staffError } = await supabase
+          .from('profiles') 
+          .select('*', { count: 'exact', head: true });
+
+        if (!staffError) {
+          totalStaffEl.textContent = staffCount || 0;
+        } else {
+          console.error("Error fetching staff count:", staffError);
+          totalStaffEl.textContent = '0';
+        }
 
     // ----------------------------------------------
     //  FETCH ADMIN FULL NAME
