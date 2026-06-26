@@ -101,15 +101,26 @@
         overflow-y: auto;
       }
       .sidebar-panel.show { left: 0; }
-      .mobile-nav { position: relative; min-height: 56px; }
+      .mobile-nav {
+        display: flex;              
+        align-items: center;       
+        justify-content: space-between; 
+        min-height: 56px;
+        position: relative;
+      }
       .brand-center {
-        position: absolute;
-        left: 40%;
-        transform: translateX(-50%);
+        flex: 1;                    
+        text-align: center;         
         margin: 0;
         white-space: nowrap;
+        position: static;           
+        transform: none;            
       }
-      .logout-area { margin-left: auto; padding-right: 3px; }
+      .logout-area {
+         margin-left: auto;          
+         padding-right: 3px;
+     }
+      
       #logoutBtn { padding-left:5px !important; padding-right:5px !important; }
       .comment-desktop-table { display: none !important; }
       .comment-mobile-cards { display: block !important; }
@@ -214,8 +225,10 @@
               <h4 class="mb-1 text-light fw-bold" id="adminWelcome">
                 Welcome back, <span id="adminNameDisplay">Admin</span>
               </h4>
-              <p class="mb-0 text-light text-muted small">System operational.</p>
-            </div>
+              <p class="mb-0" style="color: red; font-weight: bold; font-style: italic;">
+                 Admin Office Space
+              </p>
+         </div>
             <i class="bi bi-award-fill fs-2 gold-accent"></i>
           </div>
 
@@ -231,7 +244,7 @@
             <div class="col-6 col-lg-3">
               <div class="metric-card card-live p-4" data-click="articles?status=published">
                 <i class="bi bi-globe2 card-icon"></i>
-                <h6 class="text-muted small text-uppercase">Published Articles</h6>
+                <h6 class="text-muted small text-uppercase">Total Published</h6>
                 <h2 class="fw-bold mb-0" id="publishedCount">0</h2>
               </div>
             </div>
@@ -245,14 +258,14 @@
             <div class="col-6 col-lg-3">
               <div class="metric-card card-comments p-4" data-click="comments">
                 <i class="bi bi-chat-dots card-icon"></i>
-                <h6 class="text-muted small text-uppercase">Total Comments</h6>
+                <h6 class="text-muted small text-uppercase">All Comments</h6>
                 <h2 class="fw-bold mb-0" id="totalComments">0</h2>
               </div>
             </div>
 
             <div class="col-6 col-lg-3">
-              <div class="metric-card card-live p-4" data-click="articles?status=published">
-                <i class="bi bi-globe2 card-icon"></i>
+              <div class="metric-card card-staff p-4" data-click="articles?status=published">
+                <i class="bi bi-people card-icon"></i>
                 <h6 class="text-muted small text-uppercase">Total Staff</h6>
                 <h2 class="fw-bold mb-0" id="publishedCount">0</h2>
               </div>
