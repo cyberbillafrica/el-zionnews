@@ -36,16 +36,59 @@
         <input type="email" id="email" class="form-control" required placeholder="name@elzionnews.com">
       </div>
       
-      <div class="mb-4 position-relative">
+      
+      <!-- ✅ Fully‑featured password‑toggle field (Bootstrap 5 + FontAwesome 6) -->
+<div class="mb-3 position-relative">
+  <!-- Label with explicit `for` for better accessibility -->
+  <label for="password" class="form-label small fw-bold">
+    Create Security Password
+  </label>
+
+  <!-- Password input, includes ARIA descriptors for extra help/validation -->
+  <input
+    type="password"
+    id="password"
+    class="form-control"
+    required
+    placeholder="••••••••"
+    aria-describedby="pwdTip pwdError"
+  />
+
+  <!-- Eye toggle button – semantically a button, not a link -->
+  <button
+    type="button"
+    id="togglePassword"
+    class="btn btn-sm btn-outline-secondary position-absolute end-0 top-50 translate-middle-y"
+    aria-label="Show password"
+    aria-controls="password"                <!-- tells screen‑readers which input it toggles -->
+    aria-expanded="false"                   <!-- indicates current visibility state -->
+    tabindex="0"
+  >
+    <!-- The icon will toggle between eye and eye‑slash -->
+    <i class="fa-solid fa-eye"></i>
+  </button>
+
+  <!-- Optional tip text – visually hidden from visual users but read by screen readers -->
+  <div id="pwdTip" class="form-text visually-hidden">
+    Click the eye icon to reveal or hide the password.
+  </div>
+
+  <!-- Placeholder for validation error – toggled by JS -->
+  <div id="pwdError" class="invalid-feedback visually-hidden">
+    Please provide a password.
+  </div>
+</div>
+      
+      <!--<div class="mb-4 position-relative">
         <label class="form-label small fw-bold">Create Security Password</label>
         <input type="password" id="password" class="form-control" required placeholder="••••••••">
-        <!-- Eye icon button -->
+        <!-- Eye icon button --
         <button type="button" id="togglePassword" 
           class="btn btn-sm btn-outline-secondary position-absolute" 
           style="top: 50%; right: 10px; transform: translateY(-50%);">
           <i class="fa fa-eye"></i>
         </button>
-      </div>
+      </div> -->
 
       <button type="submit" class="btn btn-danger w-100 fw-bold py-2">Complete Profile Activation</button>
     </form>
