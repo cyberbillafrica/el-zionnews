@@ -1,632 +1,1054 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Master Console - El-zion News</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-  <style>
-    :root { --ez-red: #dc3545; --ez-red-dark: #b21f2d; --ez-gold: #d4af37; --ez-dark: #1a1d20; --ez-light: #f8f9fa; }
-    body { background-color: #f4f5f7; font-family: system-ui, -apple-system, sans-serif; overflow-x: hidden; }
-    .navbar-brand-custom { font-weight: 800; }
-    .navbar-brand-custom span { color: var(--ez-gold); }
-    .main-header { background: var(--ez-dark); border-bottom: 3px solid var(--ez-red); }
-    .sidebar-panel { background: #ffffff; min-height: calc(100vh - 70px); border-right: 1px solid #e3e6f0; }
-    .nav-link-custom { display: flex; align-items: center; gap: 10px; padding: 0.8rem 1rem; color: #4e5d6c; font-weight: 600; border-radius: 8px; margin-bottom: 0.25rem; transition: all 0.2s; text-decoration: none; }
-    .nav-link-custom:hover { background: var(--ez-light); color: var(--ez-red); }
-    .nav-link-custom.active { background: rgba(220, 53, 69, 0.08); color: var(--ez-red); border-left: 4px solid var(--ez-red); border-radius: 0 8px 8px 0; }
-    .metric-card { border: none; border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border-bottom: 4px solid #e3e6f0; }
-    .card-admin { border-bottom-color: var(--ez-red); }
-    .card-live { border-bottom-color: var(--ez-gold); }
-    .card-queue { border-bottom-color: var(--ez-dark); }
-    .section-view { display: none; }
-    .section-view.active { display: block; animation: fadeIn 0.3s ease-in-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .premium-badge { background: linear-gradient(135deg, var(--ez-dark), #2d3238); border-left: 3px solid var(--ez-gold); color: #fff; padding: 1.5rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; }
-    .gold-accent { color: var(--ez-gold); font-weight: 700; }
-    @media (max-width: 767.98px) {
-      .sidebar-panel { position: fixed; top: 70px; left: -100%; width: 260px; z-index: 1030; height: 100vh; transition: 0.3s; box-shadow: 4px 0 15px rgba(0,0,0,0.1); }
-      .sidebar-panel.show { left: 0; }
-    }
-  </style>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Master Console - El-zion News</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --ez-red: #dc3545;
+            --ez-red-dark: #b21f2d;
+            --ez-gold: #d4af37;
+            --ez-dark: #1a1d20;
+            --ez-light: #f8f9fa;
+        }
+
+        body {
+            background-color: #f4f5f7;
+            font-family: system-ui, -apple-system, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .navbar-brand-custom {
+            font-weight: 800;
+        }
+        .navbar-brand-custom span {
+            color: var(--ez-gold);
+        }
+
+        .main-header {
+            background: var(--ez-dark);
+            border-bottom: 3px solid var(--ez-red);
+        }
+
+        .sidebar-panel {
+            background: #ffffff;
+            min-height: calc(100vh - 70px);
+            border-right: 1px solid #e3e6f0;
+        }
+
+        .nav-link-custom {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.8rem 1rem;
+            color: #4e5d6c;
+            font-weight: 600;
+            border-radius: 8px;
+            margin-bottom: 0.25rem;
+            transition: all 0.2s;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .nav-link-custom:hover {
+            background: var(--ez-light);
+            color: var(--ez-red);
+        }
+        .nav-link-custom.active {
+            background: rgba(220, 53, 69, 0.08);
+            color: var(--ez-red);
+            border-left: 4px solid var(--ez-red);
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* --- Metric Cards --- */
+        .metric-card {
+            border: none;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            border-bottom: 4px solid #e3e6f0;
+            transition: transform 0.15s, box-shadow 0.15s;
+            cursor: pointer;
+            position: relative;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+        }
+        .metric-card .card-icon {
+            position: absolute;
+            right: 1.25rem;
+            top: 1.25rem;
+            font-size: 1.6rem;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+        .card-admin {
+            border-bottom-color: var(--ez-red);
+        }
+        .card-live {
+            border-bottom-color: var(--ez-gold);
+        }
+        .card-queue {
+            border-bottom-color: var(--ez-dark);
+        }
+        .card-comments {
+            border-bottom-color: #0d6efd;
+        }
+
+        .section-view {
+            display: none;
+        }
+        .section-view.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .premium-badge {
+            background: linear-gradient(135deg, var(--ez-dark), #2d3238);
+            border-left: 3px solid var(--ez-gold);
+            color: #fff;
+            padding: 1.5rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .gold-accent {
+            color: var(--ez-gold);
+            font-weight: 700;
+        }
+
+        /* --- Mobile Sidebar --- */
+        @media (max-width: 767.98px) {
+            .sidebar-panel {
+                position: fixed;
+                top: 70px;
+                left: -100%;
+                width: 260px;
+                z-index: 1030;
+                height: 100vh;
+                transition: 0.3s;
+                box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+                overflow-y: auto;
+            }
+            .sidebar-panel.show {
+                left: 0;
+            }
+            .mobile-nav {
+                position: relative;
+                min-height: 56px;
+            }
+            .brand-center {
+                position: absolute;
+                left: 40%;
+                transform: translateX(-50%);
+                margin: 0;
+                white-space: nowrap;
+            }
+            .logout-area {
+                margin-left: auto;
+                padding-right: 3px;
+            }
+            #logoutBtn {
+                padding-left: 5px !important;
+                padding-right: 5px !important;
+            }
+            /* comment cards on mobile */
+            .comment-desktop-table {
+                display: none !important;
+            }
+            .comment-mobile-cards {
+                display: block !important;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .comment-desktop-table {
+                display: table !important;
+            }
+            .comment-mobile-cards {
+                display: none !important;
+            }
+        }
+
+        .comment-mobile-cards .comment-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border-left: 3px solid var(--ez-gold);
+        }
+        .comment-mobile-cards .comment-card .comment-meta {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        .comment-mobile-cards .comment-card .comment-text {
+            margin: 0.5rem 0;
+            word-break: break-word;
+        }
+        .comment-mobile-cards .comment-card .comment-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .comment-text-truncate {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        @media (max-width: 767.98px) {
+            .comment-text-truncate {
+                max-width: 100%;
+                white-space: normal;
+            }
+        }
+
+        .badge-comment-status {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.6rem;
+        }
+    </style>
 </head>
 <body>
 
-  <nav class="navbar navbar-dark sticky-top main-header p-3 shadow-sm">
-    <div class="container-fluid position-relative mobile-nav">
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar navbar-dark sticky-top main-header p-3 shadow-sm">
+        <div class="container-fluid position-relative mobile-nav">
 
-        <!-- Mobile menu -->
-        <button class="navbar-toggler d-md-none me-2" type="button" id="mobileMenuToggle">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+            <button class="navbar-toggler d-md-none me-2" type="button" id="mobileMenuToggle">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-        <!-- Centered brand -->
-        <a class="navbar-brand navbar-brand-custom fw-extrabold text-white fs-4 brand-center" href="#">
-            EL-ZION <span>NEWS</span>
-        </a>
+            <a class="navbar-brand navbar-brand-custom fw-extrabold text-white fs-4 brand-center" href="#">
+                EL-ZION <span>NEWS</span>
+            </a>
 
-        <!-- User info + logout -->
-        <div class="d-flex align-items-center gap-3 logout-area">
-            <span class="text-light small d-none d-sm-inline" id="userEmail">
-                Loading Profile...
-            </span>
-
-            <button id="logoutBtn"
+            <div class="d-flex align-items-center gap-3 logout-area">
+                <span class="text-light small d-none d-sm-inline" id="userEmail">
+                    Loading Profile...
+                </span>
+                <button id="logoutBtn"
                 class="btn btn-outline-light text-danger btn-sm d-flex align-items-center gap-2 px-3 border-secondary">
                 <span>Logout</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                    viewBox="0 0 16 16">
-                    <path fill-rule="evenodd"
-                        d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 17 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0v2z" />
-                    <path fill-rule="evenodd"
-                        d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 17 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0v2z"/>
+                    <path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/>
                 </svg>
             </button>
         </div>
 
     </div>
-  </nav>
+</nav>
 
-<style>
-  @media (max-width: 767.98px) {
-
-    .mobile-nav {
-        position: relative;
-        min-height: 56px;
-    }
-
-    .brand-center {
-        position: absolute;
-        left: 40%;
-        transform: translateX(-50%);
-        margin: 0;
-        white-space: nowrap;
-    }
-
-    .logout-area {
-        margin-left: auto;
-        padding-right: 3px; /* little margin from right edge */
-    }
-
-    #logoutBtn {
-        padding-left: 5px !important;
-        padding-right:5px !important;
-    }
-}
-</style>
-
-  <div class="container-fluid">
+<!-- ===== MAIN LAYOUT ===== -->
+<div class="container-fluid">
     <div class="row">
-      <nav class="col-md-3 col-lg-2 sidebar-panel p-3" id="sidebarMenu">
-        <div class="d-flex flex-column h-100 justify-content-between">
-          <div>
-            <div class="text-uppercase tracking-wider small fw-bold text-muted mb-3 px-2">Control Matrix</div>
-            <a class="nav-link-custom active" href="#" data-section="dashboard"><i class="bi bi-speedometer2"></i> Analytics Hub</a>
-            <a class="nav-link-custom" href="#" data-section="composer"><i class="bi bi-feather"></i> Write Article</a>
-            <a class="nav-link-custom" href="#" data-section="articles"><i class="bi bi-newspaper"></i> Review Desk</a>
-            <a class="nav-link-custom" href="#" data-section="comments"><i class="bi bi-chat-left-text"></i> Comments Desk</a>
-            <a class="nav-link-custom" href="#" data-section="staff"><i class="bi bi-people"></i> Invite Staff</a>
-          </div>
-          <div class="p-2 bg-grey border rounded text-center small text-muted"><i class="bi bi-shield-check gold-accent"></i> Super Admin</div>
-        </div>
-      </nav>
 
-      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
-        
-        <!-- DASHBOARD HOME -->
-        <div id="dashboard" class="section-view active">
-          <div class="premium-badge mb-4">
-            <div><h4 class="mb-1 text-light fw-bold">Welcome back, Admin</h4><p class="mb-0 text-muted small">System operational.</p></div>
-            <i class="bi bi-award-fill fs-2 gold-accent"></i>
-          </div>
-          <div class="row g-3 mb-4">
-            <div class="col-6 col-lg-4"><div class="metric-card card-admin p-4"><h6 class="text-muted small text-uppercase">Total Assets</h6><h2 class="fw-bold mb-0" id="totalArticles">0</h2></div></div>
-            <div class="col-6 col-lg-4"><div class="metric-card card-live p-4"><h6 class="text-muted small text-uppercase">Live Public</h6><h2 class="fw-bold mb-0" id="publishedCount">0</h2></div></div>
-            <div class="col-12 col-lg-4"><div class="metric-card card-queue p-4"><h6 class="text-muted small text-uppercase">Review Queue</h6><h2 class="fw-bold mb-0" id="pendingCount">0</h2></div></div>
-          </div>
-        </div>
-
-        <!-- WRITE ARTICLE WITH SEO -->
-        <div id="composer" class="section-view">
-          <div class="card border-0 shadow-sm p-4 rounded-4 mb-4">
-            <h4 class="fw-bold mb-3 border-bottom pb-2 text-dark"><i class="bi bi-vector-pen text-danger"></i> Express Admin Composer</h4>
-            <form id="adminArticleForm">
-              <div class="mb-3">
-                <label class="form-label small fw-bold">News Headline Title</label>
-                <input type="text" id="compTitle" class="form-control form-control-lg" required placeholder="Headline...">
-              </div>
-              <div class="row mb-3 g-3">
-                <div class="col-md-6">
-                  <label class="form-label small fw-bold">Select News Category</label>
-                  <select id="compCategorySelect" class="form-select" required></select>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label small fw-bold">Upload Featured Image</label>
-                  <input type="file" id="compImageFile" class="form-control" accept="image/*">
-                </div>
-              </div>
-              <div class="mb-3">
-                <label class="form-label small fw-bold">Article Excerpt</label>
-                <input type="text" id="compExcerpt" class="form-control" placeholder="Brief summary...">
-              </div>
-              <div class="mb-3">
-                <label class="form-label small fw-bold">News Content Details</label>
-                <textarea id="compBody" class="form-control" rows="8" required></textarea>
-              </div>
-              
-              <!-- SEO Fields Bracket -->
-              <div class="bg-light p-3 rounded-3 mb-3 border">
-                <h6 class="fw-bold text-dark mb-2"><i class="bi bi-search text-primary"></i> Search Engine Optimization (SEO)</h6>
-                <div class="mb-2">
-                  <label class="small fw-semibold text-muted">SEO Meta Title</label>
-                  <input type="text" id="compSeoTitle" class="form-control form-control-sm" placeholder="Meta title for Google...">
-                </div>
+        <!-- ===== SIDEBAR ===== -->
+        <nav class="col-md-3 col-lg-2 sidebar-panel p-3" id="sidebarMenu">
+            <div class="d-flex flex-column h-100 justify-content-between">
                 <div>
-                  <label class="small fw-semibold text-muted">SEO Meta Description</label>
-                  <textarea id="compSeoDesc" class="form-control form-control-sm" rows="2" placeholder="Meta description context..."></textarea>
+                    <div class="text-uppercase tracking-wider small fw-bold text-muted mb-3 px-2">Control Matrix</div>
+                    <a class="nav-link-custom active" href="#" data-section="dashboard"><i class="bi bi-speedometer2"></i> Analytics Hub</a>
+                    <a class="nav-link-custom" href="#" data-section="composer"><i class="bi bi-feather"></i> Write Article</a>
+                    <a class="nav-link-custom" href="#" data-section="articles"><i class="bi bi-newspaper"></i> Review Desk</a>
+                    <a class="nav-link-custom" href="#" data-section="comments"><i class="bi bi-chat-left-text"></i> Comments Desk</a>
+                    <a class="nav-link-custom" href="#" data-section="staff"><i class="bi bi-people"></i> Invite Staff</a>
                 </div>
-              </div>
-
-              <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3 mb-3">
-                <div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="compBreaking"><label class="form-check-label text-danger fw-bold" for="compBreaking">Breaking News</label></div>
-                <div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="compFeatured"><label class="form-check-label text-dark fw-bold" for="compFeatured">Feature on Grid</label></div>
-              </div>
-              <div class="d-flex gap-2 justify-content-end">
-                <button type="button" class="btn btn-secondary px-4" onclick="submitAdminArticle('draft')">Save Draft</button>
-                <button type="button" class="btn btn-danger px-4" onclick="submitAdminArticle('published')">Instant Live Publish</button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <!-- REVIEW DESK -->
-        <div id="articles" class="section-view">
-          <h4 class="fw-bold mb-4">Master Editorial Desk</h4>
-          <div id="articlesList" class="row g-3"></div>
-        </div>
-
-        <!-- COMMENTS DESK -->
-        <div id="comments" class="section-view">
-          <h4 class="fw-bold mb-4"><i class="bi bi-chat-square-text text-danger"></i> Reader Comments Management Desk</h4>
-          <div class="card border-0 shadow-sm p-4 rounded-3">
-            <div class="table-responsive">
-              <table class="table table-hover align-middle">
-                <thead class="table-light"><tr><th>Article</th><th>User</th><th>Comment</th><th>Actions</th></tr></thead>
-                <tbody id="commentsTableBody"><tr><td colspan="4" class="text-muted p-3 text-center">Loading comments queue...</td></tr></tbody>
-              </table>
+                <div class="p-2 bg-grey border rounded text-center small text-muted"><i class="bi bi-shield-check gold-accent"></i> Super Admin</div>
             </div>
-          </div>
-        </div>
+        </nav>
 
-        <!-- NEW STAFF SECTION-->
-        <div id="staff" class="section-view">
-          <div class="row g-4">
-            <!-- Generator Form -->
-            <div class="col-md-5">
-              <div class="card border-0 shadow-sm p-4 rounded-4">
-                <h4 class="fw-bold mb-2 text-dark"><i class="bi bi-ticket-perforated-fill text-danger"></i> Mint Staff Invite Code</h4>
-                <p class="text-muted small">Generate a token to hand over to your new staff member for their registration bypass.</p>
-                <form id="codeGeneratorForm">
-                  <div class="mb-3">
-                    <label class="form-label small fw-bold">Intended Staff Role</label>
-                    <select id="inviteRole" class="form-select" required>
-                      <option value="admin">Admin (Co-Manager access)</option>
-                      <option value="editor">Editor (Direct Live Publish Control)</option>
-                      <option value="author">Author (Standard Draft Writer)</option>
-                    </select>
-                  </div>
-                  <button type="submit" class="btn btn-danger w-100 fw-bold">Generate Code Asset</button>
-                </form>
-              </div>
-            </div>
-            
-            <!-- Active Codes List -->
-            <div class="col-md-7">
-              <div class="card border-0 shadow-sm p-4 rounded-4">
-                <h5 class="fw-bold mb-3">Unused Registry Codes</h5>
-                <div class="table-responsive">
-                  <table class="table align-middle">
-                    <thead><tr><th>Token Code</th><th>Assigned Role</th><th>Action</th></tr></thead>
-                    <tbody id="codesTableBody">
-                      <tr><td colspan="3" class="text-muted small text-center">No active codes generated.</td></tr>
-                    </tbody>
-                  </table>
+        <!-- ===== MAIN CONTENT ===== -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+
+            <!-- ============================================================ -->
+            <!--  DASHBOARD  -->
+            <!-- ============================================================ -->
+            <div id="dashboard" class="section-view active">
+
+                <!-- Welcome banner with dynamic admin name -->
+                <div class="premium-badge mb-4">
+                    <div>
+                        <h4 class="mb-1 text-light fw-bold" id="adminWelcome">
+                            Welcome back, <span id="adminNameDisplay">Admin</span>
+                        </h4>
+                        <p class="mb-0 text-muted small">System operational.</p>
+                    </div>
+                    <i class="bi bi-award-fill fs-2 gold-accent"></i>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-      </main>
+                <!-- Metric Cards – clickable -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-lg-3">
+                        <div class="metric-card card-admin p-4" data-click="articles">
+                            <i class="bi bi-file-earmark-text card-icon"></i>
+                            <h6 class="text-muted small text-uppercase">Total Assets</h6>
+                            <h2 class="fw-bold mb-0" id="totalArticles">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="metric-card card-live p-4" data-click="articles?status=published">
+                            <i class="bi bi-globe2 card-icon"></i>
+                            <h6 class="text-muted small text-uppercase">Live Public</h6>
+                            <h2 class="fw-bold mb-0" id="publishedCount">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="metric-card card-queue p-4" data-click="articles?status=pending">
+                            <i class="bi bi-clock-history card-icon"></i>
+                            <h6 class="text-muted small text-uppercase">Review Queue</h6>
+                            <h2 class="fw-bold mb-0" id="pendingCount">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="metric-card card-comments p-4" data-click="comments">
+                            <i class="bi bi-chat-dots card-icon"></i>
+                            <h6 class="text-muted small text-uppercase">Comments</h6>
+                            <h2 class="fw-bold mb-0" id="totalComments">0</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!--  COMPOSER  -->
+            <!-- ============================================================ -->
+            <div id="composer" class="section-view">
+                <div class="card border-0 shadow-sm p-4 rounded-4 mb-4">
+                    <h4 class="fw-bold mb-3 border-bottom pb-2 text-dark"><i class="bi bi-vector-pen text-danger"></i> Express Admin Composer</h4>
+                    <form id="adminArticleForm">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">News Headline Title</label>
+                            <input type="text" id="compTitle" class="form-control form-control-lg" required placeholder="Headline...">
+                        </div>
+                        <div class="row mb-3 g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Select News Category</label>
+                                <select id="compCategorySelect" class="form-select" required></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Upload Featured Image</label>
+                                <input type="file" id="compImageFile" class="form-control" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Article Excerpt</label>
+                            <input type="text" id="compExcerpt" class="form-control" placeholder="Brief summary...">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">News Content Details</label>
+                            <textarea id="compBody" class="form-control" rows="8" required></textarea>
+                        </div>
+
+                        <!-- SEO -->
+                        <div class="bg-light p-3 rounded-3 mb-3 border">
+                            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-search text-primary"></i> Search Engine Optimization (SEO)</h6>
+                            <div class="mb-2">
+                                <label class="small fw-semibold text-muted">SEO Meta Title</label>
+                                <input type="text" id="compSeoTitle" class="form-control form-control-sm" placeholder="Meta title for Google...">
+                            </div>
+                            <div>
+                                <label class="small fw-semibold text-muted">SEO Meta Description</label>
+                                <textarea id="compSeoDesc" class="form-control form-control-sm" rows="2" placeholder="Meta description context..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3 mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="compBreaking">
+                                <label class="form-check-label text-danger fw-bold" for="compBreaking">Breaking News</label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="compFeatured">
+                                <label class="form-check-label text-dark fw-bold" for="compFeatured">Feature on Grid</label>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="button" class="btn btn-secondary px-4" onclick="submitAdminArticle('draft')">Save Draft</button>
+                            <button type="button" class="btn btn-danger px-4" onclick="submitAdminArticle('published')">Instant Live Publish</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!--  REVIEW DESK  -->
+            <!-- ============================================================ -->
+            <div id="articles" class="section-view">
+                <h4 class="fw-bold mb-4">Master Editorial Desk</h4>
+                <div id="articlesList" class="row g-3"></div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!--  COMMENTS DESK  –  FIXED with mobile-friendly layout          -->
+            <!-- ============================================================ -->
+            <div id="comments" class="section-view">
+                <h4 class="fw-bold mb-4"><i class="bi bi-chat-square-text text-danger"></i> Reader Comments Management Desk</h4>
+
+                <!-- Desktop table -->
+                <div class="card border-0 shadow-sm p-3 p-md-4 rounded-3 comment-desktop-table">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Article</th>
+                                    <th>User</th>
+                                    <th>Comment</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="commentsTableBody">
+                                <tr><td colspan="5" class="text-muted p-3 text-center">Loading comments queue…</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Mobile cards -->
+                <div class="comment-mobile-cards" id="commentsMobileContainer">
+                    <p class="text-muted small mb-3">Loading comments…</p>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!--  STAFF INVITE  -->
+            <!-- ============================================================ -->
+            <div id="staff" class="section-view">
+                <div class="row g-4">
+                    <div class="col-md-5">
+                        <div class="card border-0 shadow-sm p-4 rounded-4">
+                            <h4 class="fw-bold mb-2 text-dark"><i class="bi bi-ticket-perforated-fill text-danger"></i> Mint Staff Invite Code</h4>
+                            <p class="text-muted small">Generate a token to hand over to your new staff member for their registration bypass.</p>
+                            <form id="codeGeneratorForm">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Intended Staff Role</label>
+                                    <select id="inviteRole" class="form-select" required>
+                                        <option value="admin">Admin (Co-Manager access)</option>
+                                        <option value="editor">Editor (Direct Live Publish Control)</option>
+                                        <option value="author">Author (Standard Draft Writer)</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-danger w-100 fw-bold">Generate Code Asset</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="card border-0 shadow-sm p-4 rounded-4">
+                            <h5 class="fw-bold mb-3">Unused Registry Codes</h5>
+                            <div class="table-responsive">
+                                <table class="table align-middle">
+                                    <thead><tr><th>Token Code</th><th>Assigned Role</th><th>Action</th></tr></thead>
+                                    <tbody id="codesTableBody">
+                                        <tr><td colspan="3" class="text-muted small text-center">No active codes generated.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
     </div>
-  </div>
+</div>
 
-  <!-- EDIT MODAL WITH SEO FIELDS -->
-  <div class="modal fade" id="articleModal" tabindex="-1" aria-hidden="true">
+<!-- ===== EDIT MODAL ===== -->
+<div class="modal fade" id="articleModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-        <div class="modal-header bg-dark text-white p-4">
-          <h5 class="modal-title fw-bold"><i class="bi bi-shield-check text-danger"></i> Review Audit Protocol</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-dark text-white p-4">
+                <h5 class="modal-title fw-bold"><i class="bi bi-shield-check text-danger"></i> Review Audit Protocol</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3"><label class="form-label fw-bold small">Modified Title</label><input type="text" id="editTitle" class="form-control"></div>
+                <div class="mb-3"><label class="form-label fw-bold small">Content Copy</label><textarea id="editBody" class="form-control" rows="6"></textarea></div>
+                <div class="row g-2 bg-light p-3 rounded mb-3 border">
+                    <div class="col-md-6"><label class="small fw-bold">SEO Title</label><input type="text" id="editSeoTitle" class="form-control form-control-sm"></div>
+                    <div class="col-md-6"><label class="small fw-bold">SEO Description</label><input type="text" id="editSeoDesc" class="form-control form-control-sm"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">Deployment Lifecycle Status</label>
+                    <select id="editStatus" class="form-select">
+                        <option value="draft">Draft</option>
+                        <option value="published">Published (Live Public)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between p-4 bg-light">
+                <button type="button" id="deleteArticleBtn" class="btn btn-outline-danger fw-semibold">Purge Asset</button>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                    <button type="button" id="saveArticleBtn" class="btn btn-danger px-4">Save Verification</button>
+                </div>
+            </div>
         </div>
-        <div class="modal-body p-4">
-          <div class="mb-3"><label class="form-label fw-bold small">Modified Title</label><input type="text" id="editTitle" class="form-control"></div>
-          <div class="mb-3"><label class="form-label fw-bold small">Content Copy</label><textarea id="editBody" class="form-control" rows="6"></textarea></div>
-          <div class="row g-2 bg-light p-3 rounded mb-3 border">
-            <!-- FIX 1: Both IDs now consistently use editSeoTitle / editSeoDesc -->
-            <div class="col-md-6"><label class="small fw-bold">SEO Title</label><input type="text" id="editSeoTitle" class="form-control form-control-sm"></div>
-            <div class="col-md-6"><label class="small fw-bold">SEO Description</label><input type="text" id="editSeoDesc" class="form-control form-control-sm"></div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label fw-bold small">Deployment Lifecycle Status</label>
-            <select id="editStatus" class="form-select">
-              <option value="draft">Draft</option>
-              <option value="published">Published (Live Public)</option>
-            </select>
-          </div>
-        </div>
-        <div class="modal-footer d-flex justify-content-between p-4 bg-light">
-          <button type="button" id="deleteArticleBtn" class="btn btn-outline-danger fw-semibold">Purge Asset</button>
-          <div class="d-flex gap-2"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button><button type="button" id="saveArticleBtn" class="btn btn-danger px-4">Save Verification</button></div>
-        </div>
-      </div>
     </div>
-  </div>
+</div>
 
+<!-- ===== SCRIPTS ===== -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+</script>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script type="module">
+<script type="importmap">
+    {
+        "imports": {
+            "./services/": "./services/"
+        }
+    }
+</script>
+
+<script type="module">
+    // ----------------------------------------------
+    //  IMPORTS
+    // ----------------------------------------------
     import { getSession, signOut } from './services/auth.js';
-    import { getAllComments, hideComment, deleteComment } from './services/comments.js';
     import { isAdmin } from './services/roles.js';
     import { getArticles, updateArticle, deleteArticle, createArticle } from './services/articles.js';
     import { uploadMediaAsset } from './services/media.js';
     import { supabase } from './services/supabase.js';
 
+    // ----------------------------------------------
+    //  STATE
+    // ----------------------------------------------
     let currentUser = null;
     let editingArticleId = null;
     const articleModal = new bootstrap.Modal(document.getElementById('articleModal'));
     const sideMenu = document.getElementById('sidebarMenu');
 
-    // Mobile Menu Toggle Responsive Handler
-    document.getElementById('mobileMenuToggle').addEventListener('click', () => sideMenu.classList.toggle('show'));
+    // ----------------------------------------------
+    //  DOM REFS
+    // ----------------------------------------------
+    const $ = (id) => document.getElementById(id);
+    const adminNameDisplay = $('adminNameDisplay');
+    const adminWelcome = $('adminWelcome');
+    const userEmailEl = $('userEmail');
+    const totalArticlesEl = $('totalArticles');
+    const publishedCountEl = $('publishedCount');
+    const pendingCountEl = $('pendingCount');
+    const totalCommentsEl = $('totalComments');
 
-    // --- Core Security Authorization Wrapper ---
-    async function ensureAuth() {
-      try {
-        const { data } = await getSession();
-        if (!data?.session) { window.location.href = 'index.html'; return; }
-        currentUser = data.session.user;
-        document.getElementById('userEmail').textContent = currentUser.email;
+    // ----------------------------------------------
+    //  MOBILE SIDEBAR TOGGLE
+    // ----------------------------------------------
+    document.getElementById('mobileMenuToggle').addEventListener('click', () => {
+        sideMenu.classList.toggle('show');
+    });
 
-        // Verify Administrator security context clearance mapping
-        if (!(await isAdmin())) {
-          // Sign out before redirect — without this, a valid but non-admin session
-          // causes index.html to re-route back here, creating an infinite loop
-          await supabase.auth.signOut();
-          alert('Access Denied: Admin context validation failed.');
-          window.location.href = 'index.html'; 
-          return; 
-        }
-        
-        await loadDashboardStats();
-        await syncCategoriesDropdown();
-        setupEventListeners();
-      } catch (err) {
-        console.error("Dashboard initialization error:", err);
-  alert("Dashboard loading failed: " + err.message);
-}
-    }
+    // ----------------------------------------------
+    //  NAVIGATION
+    // ----------------------------------------------
+    function switchSection(section, params) {
+        // hide all
+        document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
+        const target = document.getElementById(section);
+        if (target) target.classList.add('active');
 
-    // --- Dropdown Population Queries ---
-    async function syncCategoriesDropdown() {
-      const dropdown = document.getElementById('compCategorySelect');
-      dropdown.innerHTML = '<option value="">-- Choose Category --</option>';
-      const { data } = await supabase.from('categories').select('id, name');
-      if (data) data.forEach(c => dropdown.innerHTML += `<option value="${c.id}">${c.name}</option>`);
-    }
-
-    // --- Operational Statistics Matrix counters ---
-    async function loadDashboardStats() {
-     const totalArticles = await getArticles();
-      document.getElementById('totalArticles').textContent = totalArticles.length;
-      document.getElementById('publishedCount').textContent = totalArticles.filter(a => a.status === 'published').length;
-      document.getElementById('pendingCount').textContent = totalArticles.filter(a => a.status === 'pending_review').length;
-    }
-
-    // --- Express Content Composer Form Submissions ---
-    window.submitAdminArticle = async function(statusTarget) {
-      const titleEl = document.getElementById('compTitle').value;
-      const bodyEl = document.getElementById('compBody').value;
-      if (!titleEl || !bodyEl) return alert('Headline and body content copy are strictly required.');
-
-      let fileUrl = null;
-      const imageNode = document.getElementById('compImageFile');
-      if (imageNode.files.length > 0) {
-        const up = await uploadMediaAsset(imageNode.files[0], currentUser.id);
-        fileUrl = up.file_url;
-      }
-
-      const payload = {
-        title: titleEl,
-        slug: titleEl.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-') + '-' + Date.now().toString().slice(-4),
-        excerpt: document.getElementById('compExcerpt').value,
-        content: bodyEl,
-        seo_title: document.getElementById('compSeoTitle').value || titleEl,
-        seo_description: document.getElementById('compSeoDesc').value || document.getElementById('compExcerpt').value,
-        breaking_news: document.getElementById('compBreaking').checked,
-        featured: document.getElementById('compFeatured').checked,
-        category_id: document.getElementById('compCategorySelect').value || null,
-        author_id: currentUser.id,
-        status: statusTarget,
-        published_at: statusTarget === 'published' ? new Date().toISOString() : null
-      };
-      if (fileUrl) payload.featured_image = fileUrl;
-
-      await createArticle(payload);
-      alert('Article recorded and deployed successfully!');
-      document.getElementById('adminArticleForm').reset();
-      await loadDashboardStats();
-      switchSection('dashboard');
-    };
-
-    // --- Centralized Section Routing Logic ---
-    window.switchSection = async function(section) {
-      document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
-      document.getElementById(section).classList.add('active');
-      document.querySelectorAll('[data-section]').forEach(l => {
-        l.classList.remove('active');
-        if (l.dataset.section === section) l.classList.add('active');
-      });
-      
-      // Dispatch content fetch actions based on active panel route target
-      if (section === 'articles') renderArticlesList(await getArticles(), 'articlesList');
-      if (section === 'comments') renderCommentsQueue();
-      if (section === 'staff') renderInvitationCodes();
-    };
-
-    // --- Navigation & Core UI Event Bindings ---
-    function setupEventListeners() {
-      document.querySelectorAll('[data-section]').forEach(link => {
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          sideMenu.classList.remove('show');
-          switchSection(link.dataset.section);
+        // update nav
+        document.querySelectorAll('[data-section]').forEach(l => {
+            l.classList.remove('active');
+            if (l.dataset.section === section) l.classList.add('active');
         });
-      });
-      
-      document.getElementById('logoutBtn').addEventListener('click', async () => { await signOut(); window.location.href = 'index.html'; });
-      document.getElementById('saveArticleBtn').addEventListener('click', saveArticleChanges);
-      document.getElementById('deleteArticleBtn').addEventListener('click', handleArticleDelete);
-      
-      // Staff Invite Generator form binding matching reuse count schema layout
-      document.getElementById('codeGeneratorForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const assignedRole = document.getElementById('inviteRole').value;
-        
-        // Generate a clean alphanumeric uppercase asset token code sequence
-        const customCode = 'EZ-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + Math.floor(10 + Math.random() * 90);
 
-        const { error } = await supabase
-          .from('invitation_codes')
-          .insert([{ 
-            code: customCode, 
-            role: assignedRole, 
-            created_by: currentUser.id,
-            max_uses: 1, // Restrict token reuse threshold limits
-            uses: 0,
-            active: true
-          }]);
+        // close sidebar on mobile
+        sideMenu.classList.remove('show');
 
-        if (error) {
-          alert('Failed to insert registry token: ' + error.message);
-        } else {
-          alert(`Success! Hand over this invite bypass token to your staff member:\n\n${customCode}`);
-          document.getElementById('codeGeneratorForm').reset();
-          renderInvitationCodes();
+        // fetch data for section
+        if (section === 'articles') renderArticlesList();
+        if (section === 'comments') renderCommentsQueue();
+        if (section === 'staff') renderInvitationCodes();
+    }
+
+    // make switchSection globally accessible for clickable cards
+    window.switchSection = switchSection;
+
+    // ----------------------------------------------
+    //  DASHBOARD STATS
+    // ----------------------------------------------
+    async function loadDashboardStats() {
+        const articles = await getArticles();
+        const total = articles.length;
+        const published = articles.filter(a => a.status === 'published').length;
+        const pending = articles.filter(a => a.status === 'pending_review' || a.status === 'draft').length;
+
+        totalArticlesEl.textContent = total;
+        publishedCountEl.textContent = published;
+        pendingCountEl.textContent = pending;
+
+        // Comment count
+        const { count, error } = await supabase
+            .from('comments')
+            .select('*', { count: 'exact', head: true });
+        if (!error) totalCommentsEl.textContent = count || 0;
+        else totalCommentsEl.textContent = '0';
+    }
+
+    // ----------------------------------------------
+    //  FETCH ADMIN FULL NAME
+    // ----------------------------------------------
+    async function loadAdminProfile(userId) {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('full_name')
+                .eq('id', userId)
+                .single();
+
+            if (error) throw error;
+            const name = data?.full_name?.trim() || 'Admin';
+            adminNameDisplay.textContent = name;
+            // also update the welcome text
+            adminWelcome.innerHTML =
+                `Welcome back, <span id="adminNameDisplay" style="color:var(--ez-gold);">${name}</span>`;
+        } catch (err) {
+            console.warn('Could not load profile name:', err.message);
+            adminNameDisplay.textContent = 'Admin';
         }
-      });
     }
 
-    // --- Invitation Codes Table Rendering Pipeline ---
-    async function renderInvitationCodes() {
-      const tbody = document.getElementById('codesTableBody');
-      tbody.innerHTML = '<tr><td colspan="3" class="text-muted small text-center">Loading registry queue...</td></tr>';
-      
-      const { data, error } = await supabase
-        .from('invitation_codes')
-        .select('*')
-        .eq('active', true);
-
-      // Clean out tokens that have exceeded or hit threshold metrics
-      const activeUnusedCodes = data ? data.filter(item => item.uses < item.max_uses) : [];
-
-      tbody.innerHTML = '';
-      if (error || activeUnusedCodes.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="text-muted small text-center">No active validation codes found.</td></tr>';
-        return;
-      }
-
-      activeUnusedCodes.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><code class="text-danger fw-bold">${item.code}</code></td>
-          <td><span class="badge bg-dark text-uppercase">${item.role}</span></td>
-          <td>
-            <button class="btn btn-sm btn-outline-secondary py-1" onclick="navigator.clipboard.writeText('${item.code}'); alert('Token string copied to clipboard!');">
-              <i class="bi bi-copy"></i> Copy
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
+    // ----------------------------------------------
+    //  CATEGORIES DROPDOWN
+    // ----------------------------------------------
+    async function syncCategoriesDropdown() {
+        const dropdown = document.getElementById('compCategorySelect');
+        dropdown.innerHTML = '<option value="">-- Choose Category --</option>';
+        const { data } = await supabase.from('categories').select('id, name');
+        if (data) {
+            data.forEach(c => {
+                dropdown.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+            });
+        }
     }
 
-    // --- Article Card Grid Display Pipeline ---
-    function renderArticlesList(articles, containerId) {
-      const container = document.getElementById(containerId);
-      container.innerHTML = '';
-      if (articles.length === 0) { container.innerHTML = '<div class="text-muted p-3">No articles recorded.</div>'; return; }
-      
-      articles.forEach(art => {
-        const div = document.createElement('div');
-        div.className = 'col-md-6 col-xl-4';
-        div.innerHTML = `
-          <div class="card h-100 border-0 shadow-sm">
-            <div class="card-body p-4 d-flex flex-column justify-content-between">
-              <div>
-                <span class="badge ${art.status === 'published' ? 'bg-success' : 'bg-secondary'} mb-2 text-uppercase">${art.status}</span>
-                <h5 class="fw-bold text-dark lh-sm mb-0">${art.title}</h5>
-              </div>
-              <button class="btn btn-sm btn-dark w-100 mt-3" onclick="editArticleModal('${art.id}')">Audit & SEO Edit</button>
-            </div>
-          </div>`;
-        container.appendChild(div);
-      });
-    }
+    // ----------------------------------------------
+    //  COMPOSER – SUBMIT
+    // ----------------------------------------------
+    window.submitAdminArticle = async function(statusTarget) {
+        const titleEl = document.getElementById('compTitle');
+        const bodyEl = document.getElementById('compBody');
+        if (!titleEl.value || !bodyEl.value) {
+            return alert('Headline and body content copy are strictly required.');
+        }
 
-    // --- Core Article Audit Modal Configuration ---
-    window.editArticleModal = async function(id) {
-      editingArticleId = id;
-      const { data } = await supabase.from('articles').select('*').eq('id', id).single();
-      if (data) {
-        document.getElementById('editTitle').value = data.title;
-        document.getElementById('editBody').value = data.content;
-        document.getElementById('editSeoTitle').value = data.seo_title || '';
-        document.getElementById('editSeoDesc').value = data.seo_description || '';
-        document.getElementById('editStatus').value = data.status;
-        articleModal.show();
-      }
+        let fileUrl = null;
+        const imageNode = document.getElementById('compImageFile');
+        if (imageNode.files.length > 0) {
+            try {
+                const up = await uploadMediaAsset(imageNode.files[0], currentUser.id);
+                fileUrl = up.file_url;
+            } catch (e) {
+                alert('Image upload failed: ' + e.message);
+                return;
+            }
+        }
+
+        const slug = titleEl.value
+            .toLowerCase()
+            .trim()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-') +
+            '-' + Date.now().toString().slice(-4);
+
+        const payload = {
+            title: titleEl.value,
+            slug,
+            excerpt: document.getElementById('compExcerpt').value || '',
+            content: bodyEl.value,
+            seo_title: document.getElementById('compSeoTitle').value || titleEl.value,
+            seo_description: document.getElementById('compSeoDesc').value || document.getElementById('compExcerpt')
+                .value || '',
+            breaking_news: document.getElementById('compBreaking').checked,
+            featured: document.getElementById('compFeatured').checked,
+            category_id: document.getElementById('compCategorySelect').value || null,
+            author_id: currentUser.id,
+            status: statusTarget,
+            published_at: statusTarget === 'published' ? new Date().toISOString() : null,
+        };
+        if (fileUrl) payload.featured_image = fileUrl;
+
+        await createArticle(payload);
+        alert('Article recorded and deployed successfully!');
+        document.getElementById('adminArticleForm').reset();
+        await loadDashboardStats();
+        switchSection('dashboard');
     };
 
-    async function saveArticleChanges() {
-      const payload = {
-        title: document.getElementById('editTitle').value,
-        content: document.getElementById('editBody').value,
-        seo_title: document.getElementById('editSeoTitle').value,
-        seo_description: document.getElementById('editSeoDesc').value,
-        status: document.getElementById('editStatus').value
-      };
-      await updateArticle(editingArticleId, payload);
-      articleModal.hide();
-      switchSection('articles');
-      await loadDashboardStats();
+    // ----------------------------------------------
+    //  ARTICLES LIST
+    // ----------------------------------------------
+    async function renderArticlesList() {
+        const container = document.getElementById('articlesList');
+        container.innerHTML = '<div class="text-muted p-3">Loading articles…</div>';
+        const articles = await getArticles();
+        if (!articles || articles.length === 0) {
+            container.innerHTML = '<div class="text-muted p-3">No articles recorded.</div>';
+            return;
+        }
+        container.innerHTML = '';
+        articles.forEach(art => {
+            const div = document.createElement('div');
+            div.className = 'col-md-6 col-xl-4';
+            div.innerHTML = `
+            <div class="card h-100 border-0 shadow-sm">
+              <div class="card-body p-4 d-flex flex-column justify-content-between">
+                <div>
+                  <span class="badge ${art.status === 'published' ? 'bg-success' : 'bg-secondary'} mb-2 text-uppercase">${art.status}</span>
+                  <h5 class="fw-bold text-dark lh-sm mb-0">${art.title}</h5>
+                </div>
+                <button class="btn btn-sm btn-dark w-100 mt-3" onclick="editArticleModal('${art.id}')">Audit & SEO Edit</button>
+              </div>
+            </div>`;
+            container.appendChild(div);
+        });
     }
 
-    async function handleArticleDelete() {
-      if (confirm('Are you absolutely sure you want to permanently purge this asset? This action cannot be undone.')) {
-        await deleteArticle(editingArticleId);
+    // ----------------------------------------------
+    //  EDIT MODAL
+    // ----------------------------------------------
+    window.editArticleModal = async function(id) {
+        editingArticleId = id;
+        const { data } = await supabase.from('articles').select('*').eq('id', id).single();
+        if (data) {
+            document.getElementById('editTitle').value = data.title || '';
+            document.getElementById('editBody').value = data.content || '';
+            document.getElementById('editSeoTitle').value = data.seo_title || '';
+            document.getElementById('editSeoDesc').value = data.seo_description || '';
+            document.getElementById('editStatus').value = data.status || 'draft';
+            articleModal.show();
+        }
+    };
+
+    document.getElementById('saveArticleBtn').addEventListener('click', async function() {
+        const payload = {
+            title: document.getElementById('editTitle').value,
+            content: document.getElementById('editBody').value,
+            seo_title: document.getElementById('editSeoTitle').value,
+            seo_description: document.getElementById('editSeoDesc').value,
+            status: document.getElementById('editStatus').value,
+        };
+        await updateArticle(editingArticleId, payload);
         articleModal.hide();
         switchSection('articles');
         await loadDashboardStats();
-      }
+    });
+
+    document.getElementById('deleteArticleBtn').addEventListener('click', async function() {
+        if (confirm('Are you absolutely sure you want to permanently purge this asset? This action cannot be undone.')) {
+            await deleteArticle(editingArticleId);
+            articleModal.hide();
+            switchSection('articles');
+            await loadDashboardStats();
+        }
+    });
+
+    // ----------------------------------------------
+    //  COMMENTS – FIXED Hide & Delete
+    // ----------------------------------------------
+    // We'll implement these directly with Supabase
+    // so they work even if the service layer has issues.
+
+    async function fetchAllComments() {
+        const { data, error } = await supabase
+            .from('comments')
+            .select(`
+            *,
+            articles:article_id ( title )
+          `)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('fetchAllComments error:', error);
+            return [];
+        }
+        return data || [];
     }
 
-    // --- Public Comment Moderation Desk ---
-async function renderCommentsQueue() {
+    async function renderCommentsQueue() {
+        const tbody = document.getElementById('commentsTableBody');
+        const mobileContainer = document.getElementById('commentsMobileContainer');
 
-  const tbody = document.getElementById('commentsTableBody');
-  tbody.innerHTML = `
-    <tr>
-      <td colspan="5" class="text-center text-muted">
-        Loading comments...
-      </td>
-    </tr>
-  `;
+        // show loading
+        tbody.innerHTML =
+            `<tr><td colspan="5" class="text-muted text-center">Loading comments…</td></tr>`;
+        mobileContainer.innerHTML = `<p class="text-muted small">Loading comments…</p>`;
 
+        const comments = await fetchAllComments();
 
-  const comments = await getAllComments();
+        if (!comments || comments.length === 0) {
+            const empty = `<tr><td colspan="5" class="text-muted text-center">No comments found.</td></tr>`;
+            tbody.innerHTML = empty;
+            mobileContainer.innerHTML = `<p class="text-muted small">No comments found.</p>`;
+            return;
+        }
 
+        // --- Desktop table ---
+        tbody.innerHTML = comments.map(c => {
+            const articleTitle = c.articles?.title || 'Unknown Article';
+            return `
+            <tr>
+              <td><span class="fw-semibold">${articleTitle}</span></td>
+              <td>
+                <strong>${c.name || 'Anonymous'}</strong>
+                <br><small class="text-muted">${c.email || ''}</small>
+              </td>
+              <td>
+                <span class="comment-text-truncate" title="${c.comment || ''}">
+                  ${c.comment || ''}
+                </span>
+              </td>
+              <td>${new Date(c.created_at).toLocaleDateString()}</td>
+              <td>
+                <button class="btn btn-sm btn-warning me-1" onclick="handleHideComment('${c.id}')">
+                  <i class="bi bi-eye-slash"></i> Hide
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="handleDeleteComment('${c.id}')">
+                  <i class="bi bi-trash3"></i> Delete
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
 
-  if (!comments || comments.length === 0) {
+        // --- Mobile cards ---
+        mobileContainer.innerHTML = comments.map(c => {
+            const articleTitle = c.articles?.title || 'Unknown Article';
+            return `
+            <div class="comment-card">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <span class="fw-semibold">${articleTitle}</span>
+                  <div class="comment-meta">
+                    <strong>${c.name || 'Anonymous'}</strong>
+                    ${c.email ? `&middot; ${c.email}` : ''}
+                    &middot; ${new Date(c.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+              <div class="comment-text">${c.comment || ''}</div>
+              <div class="comment-actions mt-2">
+                <button class="btn btn-sm btn-warning" onclick="handleHideComment('${c.id}')">
+                  <i class="bi bi-eye-slash"></i> Hide
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="handleDeleteComment('${c.id}')">
+                  <i class="bi bi-trash3"></i> Delete
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+    }
 
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="5" class="text-center text-muted">
-          No comments found.
-        </td>
-      </tr>
-    `;
+    // --- Hide comment ---
+    window.handleHideComment = async function(id) {
+        try {
+            const { error } = await supabase
+                .from('comments')
+                .update({ hidden: true, is_hidden: true })
+                .eq('id', id);
+            if (error) throw error;
+            await renderCommentsQueue();
+            await loadDashboardStats();
+        } catch (err) {
+            alert('Failed to hide comment: ' + err.message);
+        }
+    };
 
-    return;
-  }
+    // --- Delete comment ---
+    window.handleDeleteComment = async function(id) {
+        if (!confirm('Delete this comment permanently?')) return;
+        try {
+            const { error } = await supabase
+                .from('comments')
+                .delete()
+                .eq('id', id);
+            if (error) throw error;
+            await renderCommentsQueue();
+            await loadDashboardStats();
+        } catch (err) {
+            alert('Failed to delete comment: ' + err.message);
+        }
+    };
 
+    // Also keep the old names for compatibility if any inline calls exist
+    window.hideDashboardComment = window.handleHideComment;
+    window.deleteDashboardComment = window.handleDeleteComment;
 
-  tbody.innerHTML = comments.map(c => `
+    // ----------------------------------------------
+    //  INVITATION CODES
+    // ----------------------------------------------
+    async function renderInvitationCodes() {
+        const tbody = document.getElementById('codesTableBody');
+        tbody.innerHTML = '<tr><td colspan="3" class="text-muted small text-center">Loading registry queue…</td></tr>';
 
-    <tr>
+        const { data, error } = await supabase
+            .from('invitation_codes')
+            .select('*')
+            .eq('active', true);
 
-      <td>
-        ${c.articles?.title || 'Unknown Article'}
-      </td>
+        if (error || !data) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-muted small text-center">No active validation codes found.</td></tr>';
+            return;
+        }
 
+        const activeCodes = data.filter(item => (item.uses || 0) < (item.max_uses || 1));
+        if (activeCodes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-muted small text-center">No active validation codes found.</td></tr>';
+            return;
+        }
 
-      <td>
-        <strong>${c.name}</strong>
-        <br>
-        <small>${c.email}</small>
-      </td>
+        tbody.innerHTML = activeCodes.map(item => `
+          <tr>
+            <td><code class="text-danger fw-bold">${item.code}</code></td>
+            <td><span class="badge bg-dark text-uppercase">${item.role}</span></td>
+            <td>
+              <button class="btn btn-sm btn-outline-secondary py-1" onclick="navigator.clipboard.writeText('${item.code}'); alert('Token string copied to clipboard!');">
+                <i class="bi bi-copy"></i> Copy
+              </button>
+            </td>
+          </tr>
+        `).join('');
+    }
 
+    // ----------------------------------------------
+    //  STAFF CODE GENERATOR
+    // ----------------------------------------------
+    document.getElementById('codeGeneratorForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const assignedRole = document.getElementById('inviteRole').value;
+        const customCode = 'EZ-' +
+            Math.random().toString(36).substring(2, 8).toUpperCase() +
+            '-' + Math.floor(10 + Math.random() * 90);
 
-      <td>
-        ${c.comment}
-      </td>
+        const { error } = await supabase
+            .from('invitation_codes')
+            .insert([{
+                code: customCode,
+                role: assignedRole,
+                created_by: currentUser.id,
+                max_uses: 1,
+                uses: 0,
+                active: true,
+            }]);
 
+        if (error) {
+            alert('Failed to generate token: ' + error.message);
+        } else {
+            alert(`Success! Hand over this invite bypass token to your staff member:\n\n${customCode}`);
+            document.getElementById('codeGeneratorForm').reset();
+            await renderInvitationCodes();
+        }
+    });
 
-      <td>
-        ${new Date(c.created_at).toLocaleDateString()}
-      </td>
+    // ----------------------------------------------
+    //  CLICKABLE METRIC CARDS
+    // ----------------------------------------------
+    document.querySelectorAll('.metric-card[data-click]').forEach(card => {
+        card.addEventListener('click', () => {
+            const target = card.dataset.click;
+            if (target === 'articles') {
+                switchSection('articles');
+            } else if (target === 'articles?status=published') {
+                switchSection('articles');
+                // optional: filter later
+            } else if (target === 'articles?status=pending') {
+                switchSection('articles');
+            } else if (target === 'comments') {
+                switchSection('comments');
+            } else {
+                switchSection(target);
+            }
+        });
+    });
 
+    // ----------------------------------------------
+    //  NAV LINKS
+    // ----------------------------------------------
+    document.querySelectorAll('[data-section]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchSection(link.dataset.section);
+        });
+    });
 
-      <td>
+    // ----------------------------------------------
+    //  LOGOUT
+    // ----------------------------------------------
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+        await signOut();
+        window.location.href = 'index.html';
+    });
 
-        <button 
-          class="btn btn-sm btn-warning"
-          onclick="hideDashboardComment('${c.id}')">
-          Hide
-        </button>
+    // ----------------------------------------------
+    //  BOOTSTRAP – AUTH & INIT
+    // ----------------------------------------------
+    async function bootstrap() {
+        try {
+            const { data } = await getSession();
+            if (!data?.session) {
+                window.location.href = 'index.html';
+                return;
+            }
+            currentUser = data.session.user;
+            userEmailEl.textContent = currentUser.email;
 
+            // Admin check
+            if (!(await isAdmin())) {
+                await supabase.auth.signOut();
+                alert('Access Denied: Admin context validation failed.');
+                window.location.href = 'index.html';
+                return;
+            }
 
-        <button 
-          class="btn btn-sm btn-danger"
-          onclick="deleteDashboardComment('${c.id}')">
-          Delete
-        </button>
+            // Load admin name from profile
+            await loadAdminProfile(currentUser.id);
 
-      </td>
+            // Load categories
+            await syncCategoriesDropdown();
 
+            // Load stats
+            await loadDashboardStats();
 
-    </tr>
+            // Load initial sections
+            await renderArticlesList();
+            await renderCommentsQueue();
+            await renderInvitationCodes();
 
-  `).join('');
+            // Show dashboard by default
+            switchSection('dashboard');
 
-}
+            // Set up nav event listeners again (already done above)
 
-window.hideDashboardComment = async function(id){
+        } catch (err) {
+            console.error('Bootstrap error:', err);
+            alert('Dashboard loading failed: ' + err.message);
+        }
+    }
 
-  await hideComment(id);
+    bootstrap();
+</script>
 
-  await renderCommentsQueue();
-
-};
-
-
-window.deleteDashboardComment = async function(id){
-
-  if(confirm('Delete this comment permanently?')){
-
-    await deleteComment(id);
-
-    await renderCommentsQueue();
-
-  }
-
-};
-
-
-    // Start Security Orchestration Protocol
-    ensureAuth();
-  </script>
 </body>
 </html>
