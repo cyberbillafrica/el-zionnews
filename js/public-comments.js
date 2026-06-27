@@ -77,3 +77,11 @@ export async function toggleLike(commentId, visitorId) {
 export async function replyToComment(parentId, articleId, name, email, text) {
   return await submitComment(articleId, name, email, text, parentId);
 }
+
+// ==========================================
+// EXPOSE TO GLOBALS (Ensures compatibility with inline HTML script)
+// ==========================================
+window.getArticleComments = getArticleComments;
+window.submitComment = submitComment;
+window.toggleLike = toggleLike;
+window.replyToComment = replyToComment;

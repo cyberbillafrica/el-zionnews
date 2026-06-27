@@ -630,8 +630,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-public.js"></script>
     <script src="js/public-news.js"></script>
-    <script src="js/public-comments.js"></script>
-
+   <script type="module" src="public-comments.js"></script>
 
 
     <script>
@@ -703,8 +702,7 @@
         if (dateEl) dateEl.innerText = formatArticleDate(article.published_at);
 
         if (imageEl) {
-            imageEl.src = article.featured_image || 'img/placeholder.jpg';
-            imageEl.alt = article.title;
+          imageEl.src = article.featured_image || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=800&q=80'; 
         }
 
         if (tagsEl) {
