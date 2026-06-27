@@ -1,4 +1,3 @@
-import { supabase } from './supabase-public.js';
 
 /**
  * Get visible comments for an article (with like count)
