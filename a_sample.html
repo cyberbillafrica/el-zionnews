@@ -635,173 +635,162 @@
 
 
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const data = await fetchSingleArticleDetails();
+    // 1. Visitor ID (persistent) and state variables
+    let currentArticleId = null; 
+    let visitorId = localStorage.getItem('visitor_id');
+    if (!visitorId) {
+        visitorId = 'vis_' + Math.random().toString(36).substring(2, 15);
+        localStorage.setItem('visitor_id', visitorId);
+    }
 
-            if (!data || !data.article) {
-                showArticleError();
+    document.addEventListener('DOMContentLoaded', async () => {
+        const data = await fetchSingleArticleDetails();
+
+        if (!data || !data.article) {
+            showArticleError();
+            return;
+        }
+
+        const { article, comments } = data;
+        currentArticleId = article.id; // Save to global state for the reply function
+        
+        renderArticleContent(article);
+        renderCommentsList(comments);
+        setupCommentForm(article.id);
+    });
+
+    function showArticleError() {
+        const titleEl = document.getElementById('article-title');
+        const bodyEl = document.getElementById('article-body-content');
+        if (titleEl) titleEl.innerText = 'Article Not Found';
+        if (bodyEl) bodyEl.innerHTML = '<p class="alert alert-warning">The story you are looking for may have been moved or unpublished.</p>';
+    }
+
+    function renderArticleContent(article) {
+        document.title = `${article.seo_title || article.title} | El Zion News`;
+
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) metaDesc.setAttribute('content', article.seo_description || article.excerpt || '');
+
+        const ogTitle = document.querySelector('meta[property="og:title"]');
+        const ogDesc = document.querySelector('meta[property="og:description"]');
+        const ogImage = document.querySelector('meta[property="og:image"]');
+        if (ogTitle) ogTitle.setAttribute('content', article.seo_title || article.title);
+        if (ogDesc) ogDesc.setAttribute('content', article.seo_description || article.excerpt || '');
+        if (ogImage && article.featured_image) ogImage.setAttribute('content', article.featured_image);
+
+        const titleEl = document.getElementById('article-title');
+        const bodyEl = document.getElementById('article-body-content');
+        const categoryEl = document.getElementById('article-category');
+        const dateEl = document.getElementById('article-date');
+        const authorEl = document.getElementById('article-author');
+        const imageEl = document.getElementById('article-featured-image');
+        const viewsEl = document.getElementById('article-views');
+        const tagsEl = document.getElementById('article-tags');
+
+        if (titleEl) titleEl.innerText = article.title;
+        if (bodyEl) bodyEl.innerHTML = article.content || '';
+        if (authorEl) authorEl.innerText = `By ${article.profiles?.full_name || 'Staff Writer'}`;
+        if (viewsEl) viewsEl.innerText = (article.views || 0).toLocaleString();
+
+        if (categoryEl) {
+            const categoryName = getCategoryName(article);
+            categoryEl.innerText = categoryName;
+            const categorySlug = getCategorySlug(article);
+            if (categorySlug) categoryEl.href = `testcat.html?view=${encodeURIComponent(categorySlug)}`;
+        }
+
+        if (dateEl) dateEl.innerText = formatArticleDate(article.published_at);
+
+        if (imageEl) {
+            imageEl.src = article.featured_image || 'img/placeholder.jpg';
+            imageEl.alt = article.title;
+        }
+
+        if (tagsEl) {
+            const tags = getArticleTags(article);
+            tagsEl.innerHTML = tags.length
+                ? tags.map(tag => `<span class="badge badge-secondary mr-1">${escapeHTML(tag)}</span>`).join('')
+                : '';
+        }
+    }
+
+    /* Comments Rendering and Form Handling */
+
+    function renderCommentsList(comments) {
+        const commentsContainer = document.getElementById('comments-list-target');
+        if (!commentsContainer) return;
+        if (!comments.length) {
+            commentsContainer.innerHTML =
+            '<p class="text-muted no-comments-msg">No comments yet. Be the first to join the conversation!</p>';
+            return;
+        }
+        const borderColors = [
+            '#0056b3',
+            '#198754',
+            '#dc3545',
+            '#6f42c1',
+            '#fd7e14'
+        ];
+        commentsContainer.innerHTML = comments.map((c, index) => `
+            <div class="comment-card mb-3 p-3 shadow-sm"
+            style="
+            background:#f9f9f9;
+            border-left:4px solid ${borderColors[index % borderColors.length]};
+            border-radius:4px;
+            ">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <strong class="comment-author text-dark" style="font-size:0.95rem;">
+                        ${escapeHTML(c.name || 'Anonymous')}
+                    </strong>
+                    <small class="comment-date text-muted" style="font-size:0.8rem;">
+                        ${new Date(c.created_at).toLocaleDateString()}
+                    </small>
+                </div>
+                <p class="comment-text mb-2 text-secondary" style="font-size:0.9rem;line-height:1.4;">
+                    ${escapeHTML(c.comment)}
+                </p>
+                <div class="comment-actions">
+                    <button onclick="handleLike('${c.id}', this)" class="btn btn-sm btn-outline-primary">
+                        👍 Like (${c.likes || 0})
+                    </button>
+                    <!-- Renamed target handler below to avoid collision -->
+                    <button onclick="handleReplyToComment('${c.id}')" class="btn btn-sm btn-outline-secondary">
+                        💬 Reply
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function setupCommentForm(articleId) {
+        const commentForm = document.getElementById('comment-form');
+        if (!commentForm) return;
+
+        commentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const nameInput = document.getElementById('comment-name');
+            const emailInput = document.getElementById('comment-email');
+            const textInput = document.getElementById('comment-text');
+            const submitBtn = commentForm.querySelector('button[type="submit"]');
+
+            const name = nameInput.value.trim();
+            const email = emailInput.value.trim();
+            const text = textInput.value.trim();
+
+            if (!name || !email || !text) {
+                alert('Please fill in all comment form fields.');
                 return;
             }
 
-            const { article, comments } = data;
-            renderArticleContent(article);
-            renderCommentsList(comments);
-            setupCommentForm(article.id);
-        });
-
-        function showArticleError() {
-            const titleEl = document.getElementById('article-title');
-            const bodyEl = document.getElementById('article-body-content');
-            if (titleEl) titleEl.innerText = 'Article Not Found';
-            if (bodyEl) bodyEl.innerHTML = '<p class="alert alert-warning">The story you are looking for may have been moved or unpublished.</p>';
-        }
-
-        function renderArticleContent(article) {
-            document.title = `${article.seo_title || article.title} | El Zion News`;
-
-            const metaDesc = document.querySelector('meta[name="description"]');
-            if (metaDesc) metaDesc.setAttribute('content', article.seo_description || article.excerpt || '');
-
-            const ogTitle = document.querySelector('meta[property="og:title"]');
-            const ogDesc = document.querySelector('meta[property="og:description"]');
-            const ogImage = document.querySelector('meta[property="og:image"]');
-            if (ogTitle) ogTitle.setAttribute('content', article.seo_title || article.title);
-            if (ogDesc) ogDesc.setAttribute('content', article.seo_description || article.excerpt || '');
-            if (ogImage && article.featured_image) ogImage.setAttribute('content', article.featured_image);
-
-            const titleEl = document.getElementById('article-title');
-            const bodyEl = document.getElementById('article-body-content');
-            const categoryEl = document.getElementById('article-category');
-            const dateEl = document.getElementById('article-date');
-            const authorEl = document.getElementById('article-author');
-            const imageEl = document.getElementById('article-featured-image');
-            const viewsEl = document.getElementById('article-views');
-            const tagsEl = document.getElementById('article-tags');
-
-            if (titleEl) titleEl.innerText = article.title;
-            if (bodyEl) bodyEl.innerHTML = article.content || '';
-            if (authorEl) authorEl.innerText = `By ${article.profiles?.full_name || 'Staff Writer'}`;
-            if (viewsEl) viewsEl.innerText = (article.views || 0).toLocaleString();
-
-            if (categoryEl) {
-                const categoryName = getCategoryName(article);
-                categoryEl.innerText = categoryName;
-                const categorySlug = getCategorySlug(article);
-                if (categorySlug) categoryEl.href = `testcat.html?view=${encodeURIComponent(categorySlug)}`;
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerText = 'Posting...';
             }
 
-            if (dateEl) dateEl.innerText = formatArticleDate(article.published_at);
-
-            if (imageEl) {
-                imageEl.src = article.featured_image || 'img/placeholder.jpg';
-                imageEl.alt = article.title;
-            }
-
-            if (tagsEl) {
-                const tags = getArticleTags(article);
-                tagsEl.innerHTML = tags.length
-                    ? tags.map(tag => `<span class="badge badge-secondary mr-1">${escapeHTML(tag)}</span>`).join('')
-                    : '';
-            }
-        }
-
-
-
-        /* Comments Rendering and Form Handling */
-
-    function renderCommentsList(comments) {
-
-    const commentsContainer = document.getElementById('comments-list-target');
-    if (!commentsContainer) return;
-    if (!comments.length) {
-        commentsContainer.innerHTML =
-        '<p class="text-muted no-comments-msg">No comments yet. Be the first to join the conversation!</p>';
-
-        return;
-    }
-    const borderColors = [
-        '#0056b3',
-        '#198754',
-        '#dc3545',
-        '#6f42c1',
-        '#fd7e14'
-    ];
-    commentsContainer.innerHTML = comments.map((c, index) => `
-
-        <div class="comment-card mb-3 p-3 shadow-sm"
-        style="
-        background:#f9f9f9;
-        border-left:4px solid ${borderColors[index % borderColors.length]};
-        border-radius:4px;
-        ">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-                <strong 
-                class="comment-author text-dark"
-                style="font-size:0.95rem;">
-                    ${escapeHTML(c.name || 'Anonymous')}
-                </strong>
-                <small 
-                class="comment-date text-muted"
-                style="font-size:0.8rem;">
-                    ${new Date(c.created_at).toLocaleDateString()}
-                </small>
-
-            </div>
-            <p 
-            class="comment-text mb-2 text-secondary"
-            style="font-size:0.9rem;line-height:1.4;">
-                ${escapeHTML(c.comment)}
-            </p>
-            <div class="comment-actions">
-              <button 
-                onclick="handleLike('${c.id}', this)"
-                class="btn btn-sm btn-outline-primary">
-
-                👍 Like (${c.likes || 0})
-
-                </button>
-               <button
-                onclick="replyToComment('${c.id}')"
-                class="btn btn-sm btn-outline-secondary">
-
-                💬 Reply
-
-                </button>
-            </div>
-        </div>
-
-    `).join('');
-}
-
-
-        function setupCommentForm(articleId) {
-            const commentForm = document.getElementById('comment-form');
-            if (!commentForm) return;
-
-            commentForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                const nameInput = document.getElementById('comment-name');
-                const emailInput = document.getElementById('comment-email');
-                const textInput = document.getElementById('comment-text');
-                const submitBtn = commentForm.querySelector('button[type="submit"]');
-
-                const name = nameInput.value.trim();
-                const email = emailInput.value.trim();
-                const text = textInput.value.trim();
-
-                if (!name || !email || !text) {
-                    alert('Please fill in all comment form fields.');
-                    return;
-                }
-
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.innerText = 'Posting...';
-                }
-
-                const result = await submitComment(articleId, name, email, text);
-                if (result.success) {
+            const result = await submitComment(articleId, name, email, text);
+            if (result.success) {
                 alert('Thank you! Your comment has been posted successfully.');
                 nameInput.value = '';
                 emailInput.value = '';
@@ -809,48 +798,54 @@
 
                 // Refresh comments immediately
                 await loadComments(articleId);
+            } else {
+                alert(`Could not process comment entry: ${result.error}`);
+            }
 
-            
-                } else {
-                    alert(`Could not process comment entry: ${result.error}`);
-                }
-
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = 'Post Comment';
-                }
-            });
-        }
-
-    window.handleLike = async function(id, btn){
-    const likes = await likeComment(id);
-    if(likes !== null){
-        btn.innerHTML = `👍 Like (${likes})`;
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Post Comment';
+            }
+        });
     }
-};
 
-    window.replyToComment=function(id){
-    const reply = prompt(
-        "Write your reply:"
-    );
-    if(!reply) return;
+    // UPDATED: Like Handler (uses unique visitorId)
+    window.handleLike = async function(commentId, btn) {
+        const newCount = await toggleLike(commentId, visitorId);
+        if (newCount !== null) {
+            btn.innerHTML = `👍 Like (${newCount})`;
+        } else {
+            alert("Could not process like.");
+        }
+    };
 
+    // UPDATED: Reply Handler (renamed global wrapper to avoid colliding with API function)
+    window.handleReplyToComment = async function(parentId) {
+        const replyText = prompt("Write your reply:");
+        if (!replyText || !replyText.trim()) return;
 
-    // we will connect current user/article data here
+        const name = prompt("Your name:") || "Anonymous";
+        const email = prompt("Your email:") || "guest@elzionnews.com";
 
-};
+        const result = await replyToComment(parentId, currentArticleId, name, email, replyText);
+
+        if (result.success) {
+            alert("Reply posted successfully!");
+            await loadComments(currentArticleId); // Refresh
+        } else {
+            alert("Failed to post reply: " + result.error);
+        }
+    };
 
     async function loadComments(articleId){
-    try {
-    const comments = await getArticleComments(articleId);
-    renderCommentsList(comments);
-    } catch(error){
-    console.error("Loading comments failed:", error);
+        try {
+            const comments = await getArticleComments(articleId);
+            renderCommentsList(comments);
+        } catch(error){
+            console.error("Loading comments failed:", error);
+        }
     }
-
-}
-   </script>
-	
+</script>
 </body>
 
   </html>
